@@ -1,1 +1,1 @@
-C:\Users\User\IdeaProjects\education\docker\homework 2\images\test.png
+![test.png](../images/test.png)
