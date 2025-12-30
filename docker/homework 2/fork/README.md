@@ -1,1 +1,1 @@
-[test.png](../images/test.png)
+C:\Users\User\IdeaProjects\education\docker\homework 2\images\test.png
