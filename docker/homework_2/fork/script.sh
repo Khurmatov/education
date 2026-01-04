@@ -6,7 +6,7 @@ TARGET_DIR="/opt"
 if [ -d "$TARGET_DIR" ]; then
   echo "Обновление репозитория..."
   cd $TARGET_DIR
-  git pull
+  git pull $REPO_URL
 else
   echo "Клонирование репозитория..."
   git clone $REPO_URL $TARGET_DIR
