@@ -1,6 +1,6 @@
 #!/bin/bash
 
-REPO_URL="https://github.com/Khurmatov/education.git"
+REPO_URL="https://github.com/Khurmatov/education/docker/homework 2/fork.git"
 TARGET_DIR="/opt"
 
 if [ -d "$TARGET_DIR" ]; then
