@@ -14,6 +14,7 @@ else
 fi
 
 echo "Запуск проекта..."
+cd "docker/homework_2/fork"
 docker compose up -d
 
 echo "Данные скопированы"
