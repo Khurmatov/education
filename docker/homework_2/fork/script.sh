@@ -5,12 +5,12 @@ TARGET_DIR="/opt"
 
 if [ -d "$TARGET_DIR" ]; then
   echo "Обновление репозитория..."
-  cd /opt/docker/homework_2/fork
+  cd "/opt/docker/homework_2/fork"
   git pull
 else
   echo "Клонирование репозитория..."
   git clone $REPO_URL $TARGET_DIR
-  cd /opt/docker/homework_2/fork
+  cd "/opt/docker/homework_2/fork"
 fi
 
 echo "Запуск проекта..."
