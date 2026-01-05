@@ -148,7 +148,39 @@ volumes:
 ![4.1.png](Images/4.1.png)
 ![4.2.png](Images/4.2.png)
 
+bash-скрипт для скачивания репозитория и запуска проекта (в моем проекте script.sh):
+```
+#!/bin/bash
 
+REPO_URL="https://github.com/Khurmatov/education.git"
+TARGET_DIR="/opt/education"
+
+if [ -d "$TARGET_DIR" ]; then
+  echo "Обновление репозитория..."
+  cd $TARGET_DIR
+  git pull $REPO_URL
+else
+  echo "Клонирование репозитория..."
+  git clone $REPO_URL $TARGET_DIR
+  cd $TARGET_DIR
+fi
+
+echo "Запуск проекта..."
+docker compose up -d
+
+echo "Данные скопированы"
+```
+![4.3.png](Images/4.3.png)
+
+Заходим на сайт ```https://check-host.net/check-http``` и запускаем проверку:
+![4.4.png](Images/4.4.png)
+![4.5.png](Images/4.5.png)
+
+Настраиваем remote ssh context к нашему серверу через putty:
+![4.8.png](Images/4.8.png)
+![4.9.png](Images/4.9.png)
+![4.10.png](Images/4.10.png)
+![4.11.png](Images/4.11.png)
 
 ## Задача 5 (*)
 1. Напишите и задеплойте на вашу облачную ВМ bash скрипт, который произведет резервное копирование БД mysql в директорию "/opt/backup" с помощью запуска в сети "backend" контейнера из образа ```schnitzler/mysqldump``` при помощи ```docker run ...``` команды. Подсказка: "документация образа."
