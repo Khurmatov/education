@@ -1,7 +1,7 @@
 #!/bin/bash
 
 REPO_URL="https://github.com/Khurmatov/education.git"
-TARGET_DIR="/opt/docker/homework_2/fork"
+TARGET_DIR="/opt/education"
 
 if [ -d "$TARGET_DIR" ]; then
   echo "Обновление репозитория..."
