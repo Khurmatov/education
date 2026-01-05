@@ -179,8 +179,12 @@ echo "Данные скопированы"
 Настраиваем remote ssh context к нашему серверу через putty:
 ![4.8.png](Images/4.8.png)
 ![4.9.png](Images/4.9.png)
+
+Повторяем SQL-запросы:
 ![4.10.png](Images/4.10.png)
 ![4.11.png](Images/4.11.png)
+
+Ссылка на fork: ```https://github.com/Khurmatov/education.git```
 
 ## Задача 5 (*)
 1. Напишите и задеплойте на вашу облачную ВМ bash скрипт, который произведет резервное копирование БД mysql в директорию "/opt/backup" с помощью запуска в сети "backend" контейнера из образа ```schnitzler/mysqldump``` при помощи ```docker run ...``` команды. Подсказка: "документация образа."
