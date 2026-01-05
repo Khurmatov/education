@@ -26,12 +26,8 @@ See 'snap info docker' for additional versions.
 2. Убедитесь что у вас УСТАНОВЛЕН ```docker compose```(без тире) версии не менее v2.24.X, для это выполните команду ```docker compose version```
 ###  **Своё решение к задачам оформите в вашем GitHub репозитории!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!**
 
----
-
 ## Решение 0
-![0.png](../images/0.png)
-
----
+![0.png](Images/0.png)
 
 ## Задача 1
 1. Сделайте в своем GitHub пространстве fork [репозитория](https://github.com/netology-code/shvirtd-example-python).
@@ -50,9 +46,7 @@ See 'snap info docker' for additional versions.
 ---
 
 ## Решение 1
-![1.png](../images/1.png)
-
----
+![1.png](Images/1.png)
 
 ## Задача 2 (*)
 1. Создайте в yandex cloud container registry с именем "test" с помощью "yc tool" . [Инструкция](https://cloud.yandex.ru/ru/docs/container-registry/quickstart/?from=int-console-help)
@@ -71,11 +65,72 @@ See 'snap info docker' for additional versions.
 
 - ```db```. image=mysql:8. Контейнер должен работать в bridge-сети с названием ```backend``` и иметь фиксированный ipv4-адрес ```172.20.0.10```. Явно перезапуск сервиса в случае ошибок. Передайте необходимые ENV-переменные для создания: пароля root пользователя, создания базы данных, пользователя и пароля для web-приложения.Обязательно используйте уже существующий .env file для назначения секретных ENV-переменных!
 
-2. Запустите проект локально с помощью docker compose , добейтесь его стабильной работы: команда ```curl -L http://127.0.0.1:8090``` должна возвращать в качестве ответа время и локальный IP-адрес. Если сервисы не стартуют воспользуйтесь командами: ```docker ps -a ``` и ```docker logs <container_name>``` . Если вместо IP-адреса вы получаете информационную ошибку --убедитесь, что вы шлете запрос на порт ```8090```, а не 5000.
+4. Запустите проект локально с помощью docker compose , добейтесь его стабильной работы: команда ```curl -L http://127.0.0.1:8090``` должна возвращать в качестве ответа время и локальный IP-адрес. Если сервисы не стартуют воспользуйтесь командами: ```docker ps -a ``` и ```docker logs <container_name>``` . Если вместо IP-адреса вы получаете информационную ошибку --убедитесь, что вы шлете запрос на порт ```8090```, а не 5000.
 
 5. Подключитесь к БД mysql с помощью команды ```docker exec -ti <имя_контейнера> mysql -uroot -p<пароль root-пользователя>```(обратите внимание что между ключем -u и логином root нет пробела. это важно!!! тоже самое с паролем) . Введите последовательно команды (не забываем в конце символ ; ): ```show databases; use <имя вашей базы данных(по-умолчанию example)>; show tables; SELECT * from requests LIMIT 10;```.
 
 6. Остановите проект. В качестве ответа приложите скриншот sql-запроса.
+
+## Решение 3
+Содержание файла ```compose.yaml```:
+
+```
+include:
+  - proxy.yaml
+
+services:
+
+  web:
+    build:
+      dockerfile: Dockerfile.python
+    restart: on-failure
+    networks:
+      backend:
+        ipv4_address: 172.20.0.5
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=${MYSQL_DATABASE}
+      - DB_USER=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8
+    restart: on-failure
+    networks:
+      backend:
+        ipv4_address: 172.20.0.10
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=app
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_HOST="%"
+    env_file:
+      - .env
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
+```
+
+Запускаем проект:
+![3.0.0.1.png](Images/3.0.0.1.png)
+
+Посылаем команду: ```curl -L http://127.0.0.1:8090```
+![3.1.png](Images/3.1.png)
+
+Подключаемся к БД и проверяем таблицу request:
+![3.2.png](Images/3.2.png)
+![3.3.png](Images/3.3.png)
+
+Останавливаем проект:
+![3.0.1.png](Images/3.0.1.png)
 
 ## Задача 4
 1. Запустите в Yandex Cloud ВМ (вам хватит 2 Гб Ram).
@@ -84,6 +139,52 @@ See 'snap info docker' for additional versions.
 4. Зайдите на сайт проверки http подключений, например(или аналогичный): ```https://check-host.net/check-http``` и запустите проверку вашего сервиса ```http://<внешний_IP-адрес_вашей_ВМ>:8090```. Таким образом трафик будет направлен в ingress-proxy. Трафик должен пройти через цепочки: Пользователь → Internet → Nginx → HAProxy → FastAPI(запись в БД) → HAProxy → Nginx → Internet → Пользователь
 5. (Необязательная часть) Дополнительно настройте remote ssh context к вашему серверу. Отобразите список контекстов и результат удаленного выполнения ```docker ps -a```
 6. Повторите SQL-запрос на сервере и приложите скриншот и ссылку на fork.
+
+## Решение 4
+Запускаем ВМ в Yandex Cloud:
+![4.0.png](Images/4.0.png)
+
+Подключаемся по ssh и проверяем, что docker уже установлен:
+![4.1.png](Images/4.1.png)
+![4.2.png](Images/4.2.png)
+
+bash-скрипт для скачивания репозитория и запуска проекта (в моем проекте script.sh):
+```
+#!/bin/bash
+
+REPO_URL="https://github.com/Khurmatov/education.git"
+TARGET_DIR="/opt/education"
+
+if [ -d "$TARGET_DIR" ]; then
+  echo "Обновление репозитория..."
+  cd $TARGET_DIR
+  git pull $REPO_URL
+else
+  echo "Клонирование репозитория..."
+  git clone $REPO_URL $TARGET_DIR
+  cd $TARGET_DIR
+fi
+
+echo "Запуск проекта..."
+docker compose up -d
+
+echo "Данные скопированы"
+```
+![4.3.png](Images/4.3.png)
+
+Заходим на сайт ```https://check-host.net/check-http``` и запускаем проверку:
+![4.4.png](Images/4.4.png)
+![4.5.png](Images/4.5.png)
+
+Настраиваем remote ssh context к нашему серверу через putty:
+![4.8.png](Images/4.8.png)
+![4.9.png](Images/4.9.png)
+
+Повторяем SQL-запросы:
+![4.10.png](Images/4.10.png)
+![4.11.png](Images/4.11.png)
+
+Ссылка на fork: ```https://github.com/Khurmatov/education.git```
 
 ## Задача 5 (*)
 1. Напишите и задеплойте на вашу облачную ВМ bash скрипт, который произведет резервное копирование БД mysql в директорию "/opt/backup" с помощью запуска в сети "backend" контейнера из образа ```schnitzler/mysqldump``` при помощи ```docker run ...``` команды. Подсказка: "документация образа."
@@ -95,9 +196,19 @@ See 'snap info docker' for additional versions.
 Скачайте docker образ ```hashicorp/terraform:latest``` и скопируйте бинарный файл ```/bin/terraform``` на свою локальную машину, используя dive и docker save.
 Предоставьте скриншоты  действий .
 
+## Решение 6
+![6.2.png](Images/6.2.png)
+![6.3.png](Images/6.3.png)
+![6.4.png](Images/6.4.png)
+![6.5.png](Images/6.5.png)
+
 ## Задача 6.1
 Добейтесь аналогичного результата, используя docker cp.  
 Предоставьте скриншоты  действий .
+
+## Решение 6.1
+![6.1.png](Images/6.1.png)
+![6.1.1.png](Images/6.1.1.png)
 
 ## Задача 6.2 (**)
 Предложите способ извлечь файл из контейнера, используя только команду docker build и любой Dockerfile.  
