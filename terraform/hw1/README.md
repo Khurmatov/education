@@ -154,9 +154,9 @@ resource "docker_container" "1nginx" {
 ![1.4.png](images/1.4.png)
 
 Получаем 3 ошибки:
-1 ошибка - в блоке ```resource "docker_image"```, согласно документации блок ```resource``` указывается в следующем формате: ```resource "<TYPE>" "<LABEL>"   block``` "TYPE" задан, но не задан "LABEL", исправим на ```resource "docker_image" "nginx"```
-2 ошибка - в блоке ```resource "docker_container" "1nginx"```, согласно документации имя не должно начинать с цифры, исправим на ```resource "docker_container" "nginx"```
-3 ошибка - допущена опечатка в блоке ```name  = "example_${random_password.random_string_FAKE.resulT}"```, исправим на ```name  = "example_${random_password.random_string.result}"```
+1 ошибка - в блоке ```resource "docker_image"```, согласно документации блок ```resource``` указывается в следующем формате: ```resource "<TYPE>" "<LABEL>"   block``` "TYPE" задан, но не задан "LABEL", исправим на ```resource "docker_image" "nginx"```  
+2 ошибка - в блоке ```resource "docker_container" "1nginx"```, согласно документации имя не должно начинать с цифры, исправим на ```resource "docker_container" "nginx"```  
+3 ошибка - допущена опечатка в блоке ```name  = "example_${random_password.random_string_FAKE.resulT}"```, исправим на ```name  = "example_${random_password.random_string.result}"```  
 
 После исправлений команда ```terraform validate``` работает как надо:
 ![1.5.png](images/1.5.png)
