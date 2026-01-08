@@ -46,6 +46,28 @@
 8. Уничтожьте созданные ресурсы с помощью **terraform**. Убедитесь, что все ресурсы удалены. Приложите содержимое файла **terraform.tfstate**.
 9. Объясните, почему при этом не был удалён docker-образ **nginx:latest**. Ответ **ОБЯЗАТЕЛЬНО НАЙДИТЕ В ПРЕДОСТАВЛЕННОМ КОДЕ**, а затем **ОБЯЗАТЕЛЬНО ПОДКРЕПИТЕ** строчкой из документации [**terraform провайдера docker**](https://library.tf/providers/kreuzwerker/docker/latest).  (ищите в классификаторе resource docker_image )
 
+### Решение 1
+1. Скачиваем зависимости, использованные в проекте командой ```terraform init```
+![1.1.png](images/1.1.png)
+
+2. Файл **.gitignore**:
+```
+# Local .terraform directories and files
+**/.terraform/*
+.terraform*
+
+!.terraformrc
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# own secret vars store.
+personal.auto.tfvars
+```
+Хранить личную, секретную информацию(логины, пароли, ключи, токены и т.д.) исходя из лекций допустимо в файле ```personal.auto.tfvars```
+
+3. 
 
 ------
 

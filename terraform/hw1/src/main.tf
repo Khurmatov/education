@@ -4,7 +4,7 @@ terraform {
       source  = "kreuzwerker/docker"
     }
   }
-  required_version = "~>1.12.0" /*Многострочный комментарий.
+  required_version = "~>1.9.8" /*Многострочный комментарий.
  Требуемая версия terraform */
 }
 provider "docker" {}
