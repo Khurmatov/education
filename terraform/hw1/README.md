@@ -67,7 +67,65 @@ personal.auto.tfvars
 ```
 Хранить личную, секретную информацию(логины, пароли, ключи, токены и т.д.) исходя из лекций допустимо в файле ```personal.auto.tfvars```
 
-3. 
+3. Выполним код проекта командой ```terraform apply```
+![1.2.png](images/1.2.png)
+В state-файле найдем секретное содержимое созданного ресурса **random_password**:
+```
+{
+  "version": 4,
+  "terraform_version": "1.9.8",
+  "serial": 1,
+  "lineage": "6b370293-91ab-4ceb-fd96-459c59b15797",
+  "outputs": {},
+  "resources": [
+    {
+      "mode": "managed",
+      "type": "random_password",
+      "name": "random_string",
+      "provider": "provider[\"registry.terraform.io/hashicorp/random\"]",
+      "instances": [
+        {
+          "schema_version": 3,
+          "attributes": {
+            "bcrypt_hash": "$2a$10$hpJC9qtGj3RFtJpO6dXD6ONjlRbeMqoxH9UViyKviOT1Y5ZEjtuH6",
+            "id": "none",
+            "keepers": null,
+            "length": 16,
+            "lower": true,
+            "min_lower": 1,
+            "min_numeric": 1,
+            "min_special": 0,
+            "min_upper": 1,
+            "number": true,
+            "numeric": true,
+            "override_special": null,
+            "result": "2Acu7go0MZjbLvA7",
+            "special": false,
+            "upper": true
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "result"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "bcrypt_hash"
+              }
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}
+```
+Значение:
+```"result": "2Acu7go0MZjbLvA7"```
 
 ------
 
