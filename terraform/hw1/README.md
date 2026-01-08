@@ -65,10 +65,12 @@
 # own secret vars store.
 personal.auto.tfvars
 ```
+
 Хранить личную, секретную информацию(логины, пароли, ключи, токены и т.д.) исходя из лекций допустимо в файле ```personal.auto.tfvars```
 
-3. Выполним код проекта командой ```terraform apply```
+3. Выполним код проекта командой ```terraform apply```:
 ![1.2.png](images/1.2.png)
+
 В state-файле найдем секретное содержимое созданного ресурса **random_password**:
 ```
 {
@@ -124,8 +126,99 @@ personal.auto.tfvars
   "check_results": null
 }
 ```
+
 Значение:
 ```"result": "2Acu7go0MZjbLvA7"```
+
+4. Раскомментируем блок кода:
+```
+/*
+resource "docker_image" {
+  name         = "nginx:latest"
+  keep_locally = true
+}
+
+resource "docker_container" "1nginx" {
+  image = docker_image.nginx.image_id
+  name  = "example_${random_password.random_string_FAKE.resulT}"
+
+  ports {
+    internal = 80
+    external = 9090
+  }
+}
+*/
+```
+
+При выполнении команды ```terraform validate``` получаем ошибки:
+![1.4.png](images/1.4.png)
+
+Получаем 3 ошибки:
+1 ошибка - в блоке ```resource "docker_image"```, согласно документации блок ```resource``` указывается в следующем формате: ```resource "<TYPE>" "<LABEL>"   block``` "TYPE" задан, но не задан "LABEL", исправим на ```resource "docker_image" "nginx"```
+2 ошибка - в блоке ```resource "docker_container" "1nginx"```, согласно документации имя не должно начинать с цифры, исправим на ```resource "docker_container" "nginx"```
+3 ошибка - допущена опечатка в блоке ```name  = "example_${random_password.random_string_FAKE.resulT}"```, исправим на ```name  = "example_${random_password.random_string.result}"```
+
+После исправлений команда ```terraform validate``` работает как надо:
+![1.5.png](images/1.5.png)
+
+5. После исправлений код выглядит следующим образом:
+```
+resource "docker_image" "nginx" {
+  name         = "nginx:latest"
+  keep_locally = true
+}
+
+resource "docker_container" "nginx" {
+  image = docker_image.nginx.image_id
+  name  = "example_${random_password.random_string.result}"
+
+  ports {
+    internal = 80
+    external = 9090
+  }
+}
+```
+
+Выполним исправленный код:
+![1.6.png](images/1.6.png)
+Вывод команды ```docker ps```:
+![1.7.png](images/1.7.png)
+
+6. Заменим имя контейнера на ```hello_world```
+```
+resource "docker_container" "nginx" {
+  image = docker_image.nginx.image_id
+  name  = "hello_world"
+
+  ports {
+    internal = 80
+    external = 9090
+  }
+}
+```
+
+Выполните команду ```terraform apply -auto-approve``` и ```docker ps```
+![1.8.png](images/1.8.png)
+
+Применение ключа ```-auto-approve``` происходит без подтверждения команды от инженера, что негативно может сказаться на изменениях в инфраструктуре
+
+8. Уничтожим созданные ресурсы командой ```terraform destroy```:
+![1.9.png](images/1.9.png)
+
+Содержимое файла **terraform.tfstate**:
+![1.10.png](images/1.10.png)
+
+Подтверждение, что все ресурсы удалены:
+![1.11.png](images/1.11.png)
+
+8. После изучения документации можно сделать вывод, что ключ ```keep_locally``` должен ли хранится docker image после скачивания
+Посмотрев код, увидим, что данный ключ у нас находится со значением ```true```, поэтому docker image не был удален после выполнения команды destroy:
+```
+resource "docker_image" "nginx" {
+  name         = "nginx:latest"
+  keep_locally = true
+}
+```
 
 ------
 
