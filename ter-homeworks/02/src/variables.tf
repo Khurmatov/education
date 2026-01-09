@@ -63,6 +63,12 @@ variable "vm_web_image_name" {
   description = "Имя образа ОС"
 }
 
+variable "vm_web_zone" {
+  type = string
+  default = "ru-central1-a"
+  description = "Рабочая зона"
+}
+
 ### yandex_compute_instance vars
 
 variable "vm_web_name" {

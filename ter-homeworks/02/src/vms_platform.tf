@@ -1,5 +1,11 @@
 ### yandex_compute_image vars
 
+variable "vm_db_zone" {
+  type = string
+  default = "ru-central1-b"
+  description = "Рабочая зона"
+}
+
 variable "vm_db_image_name" {
   type        = string
   default     = "ubuntu-2004-lts"
