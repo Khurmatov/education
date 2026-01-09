@@ -43,10 +43,7 @@ resource "yandex_compute_instance" "platform_web" {
     subnet_id = yandex_vpc_subnet.develop.id
     nat       = true
   }
-  metadata = {
-    serial-port-enable = 1
-    ssh-keys           = "ubuntu:${var.vms_ssh_root_key}"
-  }
+  metadata = var.common_metadata
 }
 
 resource "yandex_compute_instance" "platform_db" {
@@ -71,8 +68,5 @@ resource "yandex_compute_instance" "platform_db" {
     subnet_id = yandex_vpc_subnet.develop2.id
     nat       = true
   }
-  metadata = {
-    serial-port-enable = 1
-    ssh-keys           = "ubuntu:${var.vms_ssh_root_key}"
-  }
+  metadata = var.common_metadata
 }

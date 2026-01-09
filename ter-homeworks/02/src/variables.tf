@@ -81,16 +81,7 @@ variable "vm_web_platform_id" {
   default = "standard-v3"
   description = "ID виртуальной платформы"
 }
-/*
-variable "vm_web_resources" {
-  type = map(number)
-  default = {
-    cores          = 2
-    memory         = 1
-    core_fraction  = 20
- }
-}
-*/
+
 variable "vms_resources" {
   type = map(map(number))
   description = "Общие ресурсы для виртуальных машин"
@@ -106,4 +97,13 @@ variable "vms_resources" {
       core_fraction = 20
     }
   }
+}
+
+variable "common_metadata" {
+     description = "Общая переменная для метадаты"
+            type = map(string)
+         default = {
+           serial-port-enable = "1"
+           ssh-keys           = "ubuntu:ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAZ8JS3GqbSgTYGq8CzTYhfYG5nhcrn83RV7pXccbBTz"
+         }
 }

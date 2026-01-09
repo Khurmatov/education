@@ -409,6 +409,44 @@ resource "yandex_compute_instance" "platform_db" {
 3. Найдите и закоментируйте все, более не используемые переменные проекта.
 4. Проверьте terraform plan. Изменений быть не должно.
 
+### Решение 6
+
+1. Добавил общую переменную для ресурсов в ```variables.tf```:
+```
+variable "vms_resources" {
+  type = map(map(number))
+  description = "Общие ресурсы для виртуальных машин"
+  default = {
+    vm_web_resources = {
+      cores = 2
+      memory = 1
+      core_fraction = 20
+    }
+    vm_db_resources = {
+      cores = 2
+      memory = 2
+      core_fraction = 20
+    }
+  }
+}
+```
+
+2. Добавил общую переменную для метадата и добавил в ```variables.tf```:
+```
+variable "common_metadata" {
+     description = "Общая переменная для метадаты"
+            type = map(string)
+         default = {
+           serial-port-enable = "1"
+           ssh-keys           = "ubuntu:ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAZ8JS3GqbSgTYGq8CzTYhfYG5nhcrn83RV7pXccbBTz"
+         }
+}
+```
+
+3. Лишнее закомментил, либо удалил.
+4. После изменений ```terraform plan``` работает без ошибок:
+![1.14.png](images/1.14.png)
+
 ------
 
 ## Дополнительное задание (со звёздочкой*)
