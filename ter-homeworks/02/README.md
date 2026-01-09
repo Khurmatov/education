@@ -55,8 +55,7 @@
 - ответы на вопросы.
 
 ### Решение 1
-В качестве ответа всегда полностью прикладывайте ваш terraform-код в git.
-Убедитесь что ваша версия **Terraform** ~>1.12.0
+Скачиваем дистрибутив Terraform 1.12.2, используя зеркало Яндекс при помощи утилиты wget, разархивируем скачанный архив, после этого необходимо добавить путь к директории, в которой находится исполняемый файл terraform, используя переменную PATH и команду: ```export PATH=$PATH:/home/khurmatovri```
 ![1.1.png](images/1.1.png)
 
 1. Изучил проект. Добавил недостающие строки default в файл variables.tf:
@@ -135,7 +134,7 @@ Error: Error while requesting API to create instance: client-request-id = b760df
 
 ### Решение 2
 
-1. Заменил хардкод-**значения** для ресурсов **yandex_compute_image** и **yandex_compute_instance** на **отдельные** переменные.
+1. Заменил хардкод-**значения** для ресурсов **yandex_compute_image** и **yandex_compute_instance** на **отдельные** переменные.  
 ```main.tf```
 ```
 resource "yandex_vpc_network" "develop" {
