@@ -350,9 +350,28 @@ output "VMs_output" {
 
 ### Решение 5
 
-1. В файле locals.tf опишите в **одном** local-блоке имя каждой ВМ, используйте интерполяцию ${..} с НЕСКОЛЬКИМИ переменными по примеру из лекции.
-2. Замените переменные внутри ресурса ВМ на созданные вами local-переменные.
-3. Примените изменения.
+1. Добавил в ```local.tf```:
+```
+locals {
+  lplatform    = "netology-develop-platform"
+  lweb         = "web"
+  ldb          = "db"
+  vm_web_lname = "${ local.lplatform }-${ local.lweb }"
+  vm_db_lname  = "${ local.lplatform }-${ local.ldb }"
+}
+```
+2. Внес изменения в ```main.tf```:
+```
+resource "yandex_compute_instance" "platform_web" {
+  # name          = var.vm_web_name
+  name            = local.vm_web_lname
+  
+resource "yandex_compute_instance" "platform_db" {
+  # name            = var.vm_db_name
+  name            = local.vm_db_lname
+```
+3. Применил измнения, но новое наименование оставило конфигурацию без изменений:
+
 
 ### Задание 6
 
