@@ -180,7 +180,7 @@ resource "yandex_compute_instance" "platform" {
 }
 ```
 
-2. Объявил нужные переменные в файле variables.tf.
+2. Объявил нужные переменные в файле variables.tf.  
    ```variables.tf```
 ```
 ###cloud vars
@@ -252,7 +252,7 @@ variable "vm_web_resources" {
 }
 ```
 
-3. Выполнил команду ```terraform plan```:
+3. Выполнил команду ```terraform plan```, чтобы проверить, что изменений нет:
 ![1.8.png](images/1.8.png)
 
 ### Задание 3
@@ -443,7 +443,7 @@ variable "common_metadata" {
 ```
 
 3. Лишнее закомментил, либо удалил.
-4. После изменений ```terraform plan``` работает без ошибок:
+4. После изменений ```terraform plan``` показывает, что изменений нет:
 ![1.14.png](images/1.14.png)
 
 ------
