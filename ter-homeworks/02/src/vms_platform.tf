@@ -10,7 +10,7 @@ variable "vm_db_image_name" {
 
 variable "vm_db_name" {
   type        = string
-  default     = "netology-develop-platform-web"
+  default     = "netology-develop-platform-db"
   description = "Имя виртуальной машины"
 }
 variable "vm_db_platform_id" {
