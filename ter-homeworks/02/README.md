@@ -324,6 +324,23 @@ resource "yandex_vpc_subnet" "develop2" {
 
 В качестве решения приложите вывод значений ip-адресов команды ```terraform output```.
 
+### Решение 4
+
+1. ```outputs.tf```:
+```
+output "VMs_output" {
+  value = {
+    VM_web_name   = yandex_compute_instance.platform_web.name
+    VM_web_FQDN   = yandex_compute_instance.platform_web.fqdn
+    VM_web_ext_ip = yandex_compute_instance.platform_web.network_interface[0].nat_ip_address
+    VM_db_name    = yandex_compute_instance.platform_db.name
+    VM_db_FQDN   = yandex_compute_instance.platform_db.fqdn
+    VM_db_ext_ip = yandex_compute_instance.platform_db.network_interface[0].nat_ip_address
+  }
+}
+```
+2. Применил изменения, ниже вывод команды ```terraform output```:
+![1.12.png](images/1.12.png)
 
 ### Задание 5
 
@@ -331,6 +348,11 @@ resource "yandex_vpc_subnet" "develop2" {
 2. Замените переменные внутри ресурса ВМ на созданные вами local-переменные.
 3. Примените изменения.
 
+### Решение 5
+
+1. В файле locals.tf опишите в **одном** local-блоке имя каждой ВМ, используйте интерполяцию ${..} с НЕСКОЛЬКИМИ переменными по примеру из лекции.
+2. Замените переменные внутри ресурса ВМ на созданные вами local-переменные.
+3. Примените изменения.
 
 ### Задание 6
 
