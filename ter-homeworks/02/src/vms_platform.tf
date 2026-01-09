@@ -24,6 +24,7 @@ variable "vm_db_platform_id" {
   default = "standard-v3"
   description = "ID виртуальной платформы"
 }
+/*
 variable "vm_db_resources" {
   type = map(number)
   default = {
@@ -32,3 +33,4 @@ variable "vm_db_resources" {
     core_fraction  = 20
  }
 }
+*/

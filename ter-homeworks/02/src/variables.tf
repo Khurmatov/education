@@ -81,6 +81,7 @@ variable "vm_web_platform_id" {
   default = "standard-v3"
   description = "ID виртуальной платформы"
 }
+/*
 variable "vm_web_resources" {
   type = map(number)
   default = {
@@ -88,4 +89,21 @@ variable "vm_web_resources" {
     memory         = 1
     core_fraction  = 20
  }
+}
+*/
+variable "vms_resources" {
+  type = map(map(number))
+  description = "Общие ресурсы для виртуальных машин"
+  default = {
+    vm_web_resources = {
+      cores = 2
+      memory = 1
+      core_fraction = 20
+    }
+    vm_db_resources = {
+      cores = 2
+      memory = 2
+      core_fraction = 20
+    }
+  }
 }
