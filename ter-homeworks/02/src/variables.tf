@@ -29,6 +29,12 @@ variable "vpc_name" {
   description = "VPC network & subnet name"
 }
 
+variable "default_zone2" {
+  type        = string
+  default     = "ru-central1-b"
+  description = "https://cloud.yandex.ru/docs/overview/concepts/geo-scope"
+}
+
 ###ssh vars
 
 variable "vms_ssh_root_key" {
