@@ -135,10 +135,126 @@ Error: Error while requesting API to create instance: client-request-id = b760df
 
 ### Решение 2
 
-1. 
-2. Объявите нужные переменные в файле variables.tf, обязательно указывайте тип переменной. Заполните их **default** прежними значениями из main.tf.
-3. Проверьте terraform plan. Изменений быть не должно.
+1. Заменил хардкод-**значения** для ресурсов **yandex_compute_image** и **yandex_compute_instance** на **отдельные** переменные.
+```main.tf```
+```
+resource "yandex_vpc_network" "develop" {
+  name = var.vpc_name
+}
+resource "yandex_vpc_subnet" "develop" {
+  name           = var.vpc_name
+  zone           = var.default_zone
+  network_id     = yandex_vpc_network.develop.id
+  v4_cidr_blocks = var.default_cidr
+}
 
+
+data "yandex_compute_image" "ubuntu" {
+  family = var.vm_web_image_name
+}
+resource "yandex_compute_instance" "platform" {
+  name            = var.vm_web_name
+  platform_id     = var.vm_web_platform_id
+  resources {
+    cores         = var.vm_web_resources.cores
+    memory        = var.vm_web_resources.memory
+    core_fraction = var.vm_web_resources.core_fraction
+  }
+  boot_disk {
+    initialize_params {
+      image_id = data.yandex_compute_image.ubuntu.image_id
+    }
+  }
+  scheduling_policy {
+    preemptible = true
+  }
+  network_interface {
+    subnet_id = yandex_vpc_subnet.develop.id
+    nat       = true
+  }
+
+  metadata = {
+    serial-port-enable = 1
+    ssh-keys           = "ubuntu:${var.vms_ssh_root_key}"
+  }
+
+}
+```
+
+2. Объявил нужные переменные в файле variables.tf.
+   ```variables.tf```
+```
+###cloud vars
+
+variable "cloud_id" {
+  type        = string
+  default     = "b1gr1jpfke2d4ha6mb8u"
+  description = "https://cloud.yandex.ru/docs/resource-manager/operations/cloud/get-id"
+}
+
+variable "folder_id" {
+  type        = string
+  default     = "b1glu738ickrd0srogut"
+  description = "https://cloud.yandex.ru/docs/resource-manager/operations/folder/get-id"
+}
+
+variable "default_zone" {
+  type        = string
+  default     = "ru-central1-a"
+  description = "https://cloud.yandex.ru/docs/overview/concepts/geo-scope"
+}
+variable "default_cidr" {
+  type        = list(string)
+  default     = ["10.0.1.0/24"]
+  description = "https://cloud.yandex.ru/docs/vpc/operations/subnet-create"
+}
+
+variable "vpc_name" {
+  type        = string
+  default     = "develop"
+  description = "VPC network & subnet name"
+}
+
+###ssh vars
+
+variable "vms_ssh_root_key" {
+  type        = string
+  default     = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAZ8JS3GqbSgTYGq8CzTYhfYG5nhcrn83RV7pXccbBTz"
+  description = "ssh-keygen -t ed25519"
+}
+
+### yandex_compute_image vars
+
+variable "vm_web_image_name" {
+  type        = string
+  default     = "ubuntu-2004-lts"
+  description = "Имя образа ОС"
+}
+
+### yandex_compute_instance vars
+
+variable "vm_web_name" {
+  type        = string
+  default     = "netology-develop-platform-web"
+  description = "Имя виртуальной машины"
+}
+variable "vm_web_platform_id" {
+  type = string
+  default = "standard-v3"
+  description = "ID виртуальной платформы"
+}
+variable "vm_web_resources" {
+  type = map(number)
+  default = {
+    cores          = 2
+    memory         = 1
+    core_fraction  = 20
+ }
+}
+```
+
+3. Выполнил команду ```terraform plan```:
+![1.8.png](images/1.8.png)
 
 ### Задание 3
 
@@ -146,6 +262,15 @@ Error: Error while requesting API to create instance: client-request-id = b760df
 2. Скопируйте блок ресурса и создайте с его помощью вторую ВМ в файле main.tf: **"netology-develop-platform-db"** ,  ```cores  = 2, memory = 2, core_fraction = 20```. Объявите её переменные с префиксом **vm_db_** в том же файле ('vms_platform.tf').  ВМ должна работать в зоне "ru-central1-b"
 3. Примените изменения.
 
+### Решение 3
+
+1. Создал в корне проекта файл 'vms_platform.tf'. Перенес в него все переменные первой ВМ.
+
+
+
+
+2. Скопируйте блок ресурса и создайте с его помощью вторую ВМ в файле main.tf: **"netology-develop-platform-db"** ,  ```cores  = 2, memory = 2, core_fraction = 20```. Объявите её переменные с префиксом **vm_db_** в том же файле ('vms_platform.tf').  ВМ должна работать в зоне "ru-central1-b"
+3. Примените изменения.
 
 ### Задание 4
 
