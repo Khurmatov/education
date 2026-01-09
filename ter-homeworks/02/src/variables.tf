@@ -1,6 +1,5 @@
 ###cloud vars
 
-
 variable "cloud_id" {
   type        = string
   default     = "b1gr1jpfke2d4ha6mb8u"
@@ -29,7 +28,6 @@ variable "vpc_name" {
   default     = "develop"
   description = "VPC network & subnet name"
 }
-
 
 ###ssh vars
 
