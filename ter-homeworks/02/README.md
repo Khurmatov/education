@@ -265,12 +265,57 @@ variable "vm_web_resources" {
 ### Решение 3
 
 1. Создал в корне проекта файл 'vms_platform.tf'. Перенес в него все переменные первой ВМ.
+```vms_platform.tf```:
+```
+### yandex_compute_image vars
 
+variable "vm_db_zone" {
+  type = string
+  default = "ru-central1-b"
+  description = "Рабочая зона"
+}
 
+variable "vm_db_image_name" {
+  type        = string
+  default     = "ubuntu-2004-lts"
+  description = "Имя образа ОС"
+}
 
+### yandex_compute_instance vars
 
-2. Скопируйте блок ресурса и создайте с его помощью вторую ВМ в файле main.tf: **"netology-develop-platform-db"** ,  ```cores  = 2, memory = 2, core_fraction = 20```. Объявите её переменные с префиксом **vm_db_** в том же файле ('vms_platform.tf').  ВМ должна работать в зоне "ru-central1-b"
-3. Примените изменения.
+variable "vm_db_name" {
+  type        = string
+  default     = "netology-develop-platform-db"
+  description = "Имя виртуальной машины"
+}
+variable "vm_db_platform_id" {
+  type = string
+  default = "standard-v3"
+  description = "ID виртуальной платформы"
+}
+variable "vm_db_resources" {
+  type = map(number)
+  default = {
+    cores          = 2
+    memory         = 2
+    core_fraction  = 20
+ }
+}
+```
+
+2. Для корректной работы второй ВМ в другой сетевой зоне необходимо было добавить в **main.tf** блок кода с описанием второй сети:
+```
+## новая подсеть для работы в другой зоне
+resource "yandex_vpc_subnet" "develop2" {
+  name            = var.vpc_name2
+  zone            = var.default_zone2
+  network_id      = yandex_vpc_network.develop.id
+  v4_cidr_blocks  = var.default_cidr2
+}
+```
+3. Применил изменения, создалась вторая ВМ:
+![1.10.png](images/1.10.png)
+![1.11.png](images/1.11.png)
 
 ### Задание 4
 
