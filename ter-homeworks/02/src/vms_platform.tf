@@ -22,7 +22,7 @@ variable "vm_db_resources" {
   type = map(number)
   default = {
     cores          = 2
-    memory         = 1
+    memory         = 2
     core_fraction  = 20
  }
 }
