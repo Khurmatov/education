@@ -22,7 +22,8 @@ data "yandex_compute_image" "ubuntu" {
 }
 
 resource "yandex_compute_instance" "platform_web" {
-  name            = var.vm_web_name
+  # name          = var.vm_web_name
+  name            = local.vm_web_lname
   platform_id     = var.vm_web_platform_id
   resources {
     cores         = var.vm_web_resources.cores
@@ -48,7 +49,8 @@ resource "yandex_compute_instance" "platform_web" {
 }
 
 resource "yandex_compute_instance" "platform_db" {
-  name            = var.vm_db_name
+  # name            = var.vm_db_name
+  name            = local.vm_db_lname
   platform_id     = var.vm_db_platform_id
   resources {
     cores         = var.vm_db_resources.cores
@@ -64,7 +66,7 @@ resource "yandex_compute_instance" "platform_db" {
     preemptible = true
   }
   network_interface {
-    subnet_id = yandex_vpc_subnet.develop.id
+    subnet_id = yandex_vpc_subnet.develop2.id
     nat       = true
   }
   metadata = {
