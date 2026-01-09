@@ -75,9 +75,45 @@ variable "vms_ssh_root_key" {
 }
 ```
 
+4. Инициализировал проект, выполнение кода не выполнилось из-за ошибок:
+4.1. В файле **main.tf** допущена опечатка в слове ```standart``` и указана неверная версия, (допустимы v1, v2, v3):
+```
+Error: Error while requesting API to create instance: client-request-id = 3f962eb2-1bf2-40ed-a01c-f486edb767c2 client-trace-id = 68c86a34-90b1-4e25-a567-ff5ff7af1c68 rpc error: code = FailedPrecondition desc = Platform "standart-v4" not found
+│
+│   with yandex_compute_instance.platform,
+│   on main.tf line 15, in resource "yandex_compute_instance" "platform":
+│   15: resource "yandex_compute_instance" "platform" {
+```
+Исправил ```standart-v4``` на ```standard-v3```
 
-
-
+4.2. В файле **main.tf** указаны неверно resources:
+```  
+  resources {
+    cores         = 1
+    memory        = 1
+    core_fraction = 5
+```
+```
+Error: Error while requesting API to create instance: client-request-id = 6deb0045-dd1d-451a-95a3-76c7ce2c6d6f client-trace-id = ee6e93ab-6deb-48d9-8b61-a5de9806c79a rpc error: code = InvalidArgument desc = the specified core fraction is not available on platform "standard-v3"; allowed core fractions: 20, 50, 100
+│
+│   with yandex_compute_instance.platform,
+│   on main.tf line 15, in resource "yandex_compute_instance" "platform":
+│   15: resource "yandex_compute_instance" "platform" {
+```
+```
+Error: Error while requesting API to create instance: client-request-id = b760df97-cef4-4e3f-8e1e-1d13424f7d9c client-trace-id = a592ef98-458f-44ec-bc21-7a9766172907 rpc error: code = InvalidArgument desc = the specified number of cores is not available on platform "standard-v3"; allowed core number: 2, 4
+│
+│   with yandex_compute_instance.platform,
+│   on main.tf line 15, in resource "yandex_compute_instance" "platform":
+│   15: resource "yandex_compute_instance" "platform" {
+```
+Исправил на:
+```  
+  resources {
+    cores         = 2
+    memory        = 1
+    core_fraction = 20
+```
 
 
 
