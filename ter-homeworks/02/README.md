@@ -107,7 +107,7 @@ Error: Error while requesting API to create instance: client-request-id = b760df
 │   on main.tf line 15, in resource "yandex_compute_instance" "platform":
 │   15: resource "yandex_compute_instance" "platform" {
 ```
-Исправил на:
+Исправил количество, так как разрешено cores минимум 2, а core_fraction минимум 20:
 ```  
   resources {
     cores         = 2
@@ -115,9 +115,13 @@ Error: Error while requesting API to create instance: client-request-id = b760df
     core_fraction = 20
 ```
 
+После исправления ошибок, код выполнился:
+![1.6.png](images/1.6.png)
 
+Создалась ВМ:
+![1.5.png](images/1.5.png)
 
-
+5. 
 
 
 
