@@ -103,11 +103,47 @@ resource "yandex_compute_instance" "web" {
 ![2.1.png](images/2.1.png)
 ![2.2.png](images/2.2.png)
 
-2. 
+2. Создал файл **for_each-vm.tf**:
+```
+resource "yandex_compute_instance" "database" {
+  for_each         = { for i in var.each_vm : i.vm_name => i }
 
+  name             = each.value.vm_name
+  hostname         = each.value.vm_name
+  platform_id      = var.common_platform
+  zone             = var.default_zone
 
+  resources {
+    cores          = each.value.cpu
+    memory         = each.value.ram
+    core_fraction  = var.vm_resources.core_fraction
+  }
 
+  boot_disk {
+    initialize_params {
+      image_id     = data.yandex_compute_image.ubuntu.image_id
+      size         = each.value.disk_volume
+    }
+  }
 
+  scheduling_policy {
+    preemptible    = var.interrupt
+  }
+
+  network_interface {
+
+    subnet_id      = yandex_vpc_subnet.develop.id
+    nat            = var.nat
+    security_group_ids = [yandex_vpc_security_group.example.id]
+  }
+
+  metadata = merge(var.common_metadata, local.metadata)
+}
+```
+ВМ из пункта 2.1 создались после создания ВМ из пункта 2.2, для считывания ключа ~/.ssh/id_rsa.pub используется функция file в local-переменной.
+Инициализировал проект, выполнил код:
+![2.3.png](images/2.3.png)
+![2.4.png](images/2.4.png)
 
 ------
 
