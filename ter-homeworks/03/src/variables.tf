@@ -97,3 +97,36 @@ variable "each_vm" {
     }
   ]
 }
+
+variable "vd" {
+  type = object({
+    name    = string
+    counter = number
+    type    = string
+    size    = number
+  })
+  default = {
+    name    = "virtual-disk"
+    counter = 3
+    type    = "network-hdd"
+    size    = 1
+  }
+  description = "Информация о дисках"
+}
+
+variable "storage" {
+  type = object({
+    name          = string
+    hostname      = string
+    cores         = number
+    memory        = number
+    core_fraction = number
+  })
+  default = {
+    name          = "storage"
+    hostname      = "storage"
+    cores         = 2
+    memory        = 1
+    core_fraction = 20
+  }
+}
