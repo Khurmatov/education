@@ -3,7 +3,7 @@ data "yandex_compute_image" "ubuntu" {
 }
 
 resource "yandex_compute_instance" "web" {
-  depends_on = [yandex_compute_instance.main_replica]
+  depends_on = [yandex_compute_instance.database]
   count       = 2
   name        = "web-${count.index + 1}"
   hostname    = "${ yandex_vpc_network.develop.name }-web-${ count.index + 1 }"
