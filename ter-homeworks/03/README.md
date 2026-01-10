@@ -211,6 +211,9 @@ resource "yandex_compute_instance" "storage" {
     }
   }
 ```
+![2.5.png](images/2.5.png)
+![2.6.png](images/2.6.png)
+![2.7.png](images/2.7.png)
 
 ------
 
