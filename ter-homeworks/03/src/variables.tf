@@ -1,7 +1,6 @@
 ###cloud vars
 variable "token" {
   type        = string
-  default     = "y0__xCgrp65BBjB3RMgvsO5gBbznMCKneujHKJOPSJn-EhuKFDAkQ"
   description = "OAuth-token; https://cloud.yandex.ru/docs/iam/concepts/authorization/oauth-token"
 }
 
