@@ -22,8 +22,8 @@ variable "default_zone" {
   description = "https://cloud.yandex.ru/docs/overview/concepts/geo-scope"
 }
 variable "default_cidr" {
-  type        = list(string)
-  default     = ["10.0.1.0/24"]
+  type = list(string)
+  default = ["10.0.1.0/24"]
   description = "https://cloud.yandex.ru/docs/vpc/operations/subnet-create"
 }
 
@@ -31,4 +31,45 @@ variable "vpc_name" {
   type        = string
   default     = "develop"
   description = "VPC network&subnet name"
+}
+
+variable "version_image" {
+  type        = string
+  default     = "ubuntu-2004-lts"
+  description = "Версия ОС"
+}
+
+variable "common_platform" {
+  type        = string
+  default     = "standard-v1"
+  description = "Платформа"
+}
+
+variable "vm_resources" {
+  type = map(number)
+  description = "Ресурсы для виртуальных машин"
+  default = {
+    cores         = 2
+    memory        = 1
+    core_fraction = 20
+  }
+}
+
+variable "interrupt" {
+  type        = bool
+  default     = true
+  description = "Всегда прерываемая"
+}
+variable "nat" {
+  type        = bool
+  default     = true
+  description = "Включение NAT"
+}
+
+variable "common_metadata" {
+  description = "Общая метадата для SSH"
+  type = map(string)
+  default = {
+    serial-port-enable = "1"
+  }
 }
