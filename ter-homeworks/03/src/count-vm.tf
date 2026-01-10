@@ -30,8 +30,5 @@ resource "yandex_compute_instance" "web" {
     security_group_ids = [yandex_vpc_security_group.example.id]
   }
 
-  metadata = {
-    ssh-keys = "ubuntu:${file("~/.ssh/id_rsa.pub")}"
-  }
   metadata = merge(var.common_metadata, local.metadata)
 }
