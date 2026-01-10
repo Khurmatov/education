@@ -243,6 +243,47 @@ storage ansible_host=<внешний ip-адрес> fqdn=<полное доме�
 Для общего зачёта создайте в вашем GitHub-репозитории новую ветку terraform-03. Закоммитьте в эту ветку свой финальный код проекта, пришлите ссылку на коммит.   
 **Удалите все созданные ресурсы**.
 
+### Решение 4
+Создал файлы **ansible.tf**:
+```
+resource "local_file" "inventory" {
+  content = templatefile("${path.module}/hosts.tftpl",
+    {
+      webservers = yandex_compute_instance.web
+      databases  = yandex_compute_instance.database
+      storage    = [yandex_compute_instance.storage]
+    })
+  filename = "${abspath(path.module)}/hosts.cfg"
+}
+```
+
+И **hosts.tftpl**:
+```
+[webservers]
+
+%{~ for i in webservers ~}
+${i["name"]}   ansible_host=${i.network_interface[0].nat_ip_address == "" ? i.network_interface[0].ip_address : i.network_interface[0].nat_ip_address}  ${i.fqdn}
+
+%{~ endfor ~}
+
+[databases]
+
+%{~ for i in databases ~}
+${i["name"]}   ansible_host=${i.network_interface[0].nat_ip_address == "" ? i.network_interface[0].ip_address : i.network_interface[0].nat_ip_address}  ${i.fqdn}
+
+%{~ endfor ~}
+
+[storage]
+
+%{~ for i in storage ~}
+${i["name"]}   ansible_host=${i.network_interface[0].nat_ip_address == "" ? i.network_interface[0].ip_address : i.network_interface[0].nat_ip_address}  ${i.fqdn}
+
+%{~ endfor ~}
+```
+
+Выполнил код, файл **hosts.cfg** заполнился:
+![2.9.png](images/2.9.png)
+
 ------
 
 ## Дополнительные задания (со звездочкой*)
