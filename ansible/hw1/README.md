@@ -30,7 +30,6 @@
 ## Ответы к основной части
 1. Запустил playbook командой:
 ```ansible-playbook ./playbook/site.yml -i ./playbook/inventory/test.yml```
-
 Факт `some_fact` имеет значение, выделенное на скриншоте:
 ![1.png](images/1.png)
 
@@ -39,11 +38,19 @@
 ---
   some_fact: all default fact
 ```
-
 Запускаем playbook, получаем результат на скриншоте:
 ![2.png](images/2.png)
 
-3. 
+3. Запустим существующие контейнеры:
+![3.png](images/3.png)
+
+4. ansible-playbook ./playbook/site.yml -i ./playbook/inventory/prod.yml
+![4.png](images/4.png)
+
+
+
+
+
 
 ## Необязательная часть
 
