@@ -8,19 +8,19 @@
         name: clickhouse-server
         state: restarted
   tasks:
-    - name: Download Clickhouse packages with fallback  # ← ДОБАВЛЕНО ИМЯ
+    - name: Download Clickhouse packages with fallback
       block:
         - name: Get clickhouse distrib
           ansible.builtin.get_url:
             url: "https://packages.clickhouse.com/rpm/stable/{{ item }}-{{ clickhouse_version }}.noarch.rpm"
-            dest: "./{{ item }}-{{ clickhouse_version }}.rpm"
+            dest: "./{{ item }}-{{ clickhouse_version }}.noarch.rpm"
             mode: "0644"
           with_items: "{{ clickhouse_packages }}"
       rescue:
         - name: Get clickhouse static distrib
           ansible.builtin.get_url:
             url: "https://packages.clickhouse.com/rpm/stable/clickhouse-common-static-{{ clickhouse_version }}.x86_64.rpm"
-            dest: "./clickhouse-common-static-{{ clickhouse_version }}.rpm"
+            dest: "./clickhouse-common-static-{{ clickhouse_version }}.x86_64.rpm"
             mode: "0644"
 
     - name: Install clickhouse packages
