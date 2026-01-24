@@ -34,11 +34,15 @@
 clickhouse:
   hosts:
     clickhouse-01:
-      ansible_host: 89.169.172.148
+      ansible_host: 158.160.75.97
+      ansible_user: centos
+      ansible_ssh_private_key_file: "~/.ssh/id_centos_vm"
 vector:
   hosts:
     vector-01:
-      ansible_host: 158.160.75.97
+      ansible_host: 158.160.67.184
+      ansible_user: centos
+      ansible_ssh_private_key_file: "~/.ssh/id_centos_vm"
 ```
 
 2. Допишите playbook: нужно сделать ещё один play, который устанавливает и настраивает [vector](https://vector.dev). Конфигурация vector должна деплоиться через template файл jinja2. От вас не требуется использовать все возможности шаблонизатора, просто вставьте стандартный конфиг в template файл. Информация по шаблонам по [ссылке](https://www.dmosk.ru/instruktions.php?object=ansible-nginx-install). не забудьте сделать handler на перезапуск vector в случае изменения конфигурации!
@@ -50,12 +54,31 @@ vector:
   vars_files:
     - vector/vars.yml
   handlers:
+    - name: daemon-reload
+      become: true
+      ansible.builtin.systemd:
+        daemon_reload: true
+
     - name: Restart vector
       become: true
       ansible.builtin.systemd:
         name: vector
         state: restarted
+
   tasks:
+    # Создание директорий
+    - name: Create Vector directories
+      become: true
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - "{{ vector_install_dir }}"
+        - "{{ vector_config_dir }}"
+      tags: vector
+
+    # Скачивание архива
     - name: Download Vector archive
       become: true
       ansible.builtin.get_url:
@@ -63,7 +86,9 @@ vector:
         dest: "/tmp/vector-{{ vector_version }}.tar.gz"
         timeout: 30
         mode: '0644'
+      tags: vector
 
+    # Распаковка
     - name: Extract Vector to installation directory
       become: true
       ansible.builtin.unarchive:
@@ -71,7 +96,9 @@ vector:
         dest: "{{ vector_install_dir }}"
         remote_src: true
         creates: "{{ vector_install_dir }}/vector-{{ vector_version }}/bin/vector"
+      tags: vector
 
+    # Установка бинарника
     - name: Install Vector binary
       become: true
       ansible.builtin.file:
@@ -80,7 +107,21 @@ vector:
         state: link
         force: true
         mode: '0755'
+      tags: vector
 
+    # Создание systemd сервиса
+    - name: Create Vector systemd service
+      become: true
+      ansible.builtin.template:
+        src: vector.service.j2
+        dest: /etc/systemd/system/vector.service
+        mode: '0644'
+      notify:
+        - daemon-reload
+        - Restart vector
+      tags: vector
+
+    # Деплой конфигурации
     - name: Deploy Vector configuration
       become: true
       ansible.builtin.template:
@@ -88,6 +129,17 @@ vector:
         dest: "{{ vector_config_dir }}/vector.yml"
         mode: '0644'
       notify: Restart vector
+      tags: vector
+
+    # Включение и запуск сервиса
+    - name: Enable and start Vector service
+      become: true
+      ansible.builtin.systemd:
+        name: vector
+        state: started
+        enabled: true
+        daemon_reload: true
+      tags: vector
 ```
 
 5. Запустите `ansible-lint site.yml` и исправьте ошибки, если они есть.
@@ -95,11 +147,29 @@ vector:
 ![2.png](images/2.png)
 
 6. Попробуйте запустить playbook на этом окружении с флагом `--check`.
+После запуска playbook завершатся с ошибкой, так как запуск с флагом `--check` не производит никаких изменений, файл не скачивается
+![3.png](images/3.png)
 
+7. Запустите playbook на `prod.yml` окружении с флагом `--diff`. Убедитесь, что изменения на системе произведены.
+![3.5.png](images/3.5.png)
 
+8. Повторно запустите playbook с флагом `--diff` и убедитесь, что playbook идемпотентен.
+![4.png](images/4.png)
+![5.png](images/5.png)
 
+9.
+# Ansible Playbook для установки ClickHouse и Vector
 
+## Описание
 
+Данный playbook предназначен для автоматической установки и настройки двух компонентов:
+1. **ClickHouse** - высокопроизводительная колоночная СУБД для аналитики
+2. **Vector** - сборщик и агрегатор логов с возможностью трансформации данных
 
+Playbook демонстрирует следующие возможности Ansible:
+- Установка пакетов из удаленных репозиториев
+- Работа с шаблонами Jinja2 для конфигурации
+- Использование handlers для перезапуска сервисов
+- Идемпотентность операций
 
 ---
