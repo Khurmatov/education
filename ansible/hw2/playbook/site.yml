@@ -13,8 +13,8 @@
       block:
         - name: Clickhouse | Get clickhouse distrib
           ansible.builtin.get_url:
-            url: "https://packages.clickhouse.com/rpm/stable/{{ item }}-{{ clickhouse_version }}.noarch.rpm"
-            dest: "./{{ item }}-{{ clickhouse_version }}.rpm"
+            url: "https://packages.clickhouse.com/rpm/stable/{{ item }}-{{ clickhouse_version }}.x86_64.rpm"
+            dest: "./{{ item }}-{{ clickhouse_version }}.x86_64.rpm"
             mode: "0644"
           with_items: "{{ clickhouse_packages }}"
       rescue:
@@ -28,8 +28,8 @@
       ansible.builtin.yum:
         name:
           - "./clickhouse-common-static-{{ clickhouse_version }}.x86_64.rpm"
-          - "./clickhouse-client-{{ clickhouse_version }}.noarch.rpm"
-          - "./clickhouse-server-{{ clickhouse_version }}.noarch.rpm"
+          - "./clickhouse-client-{{ clickhouse_version }}.x86_64.rpm"
+          - "./clickhouse-server-{{ clickhouse_version }}.x86_64.rpm"
       notify: Start clickhouse service
     - name: Flush handlers
       ansible.builtin.meta: flush_handlers
