@@ -36,85 +36,47 @@
       changed_when: create_db.rc == 0
 - name: Install Vector
   hosts: vector
-  become: true
-  vars:
-    vector_bin_path: "/usr/local/bin/vector"
+  vars_files:
+    - vector/vars.yml
+  handlers:
+    - name: restart vector
+      become: true
+      ansible.builtin.systemd:
+        name: vector
+        state: restarted
   tasks:
-    # Создаем директории
-    - name: Create Vector directories
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: directory
-        mode: '0755'
-      loop:
-        - "{{ vector_install_dir }}"
-        - /etc/vector
-        - /var/lib/vector
-        - /var/log/vector
-      tags: install
-
-    # Скачиваем дистрибутив
+    # 1. Скачиваем дистрибутив
     - name: Download Vector archive
+      become: true
       ansible.builtin.get_url:
         url: "https://packages.timber.io/vector/{{ vector_version }}/vector-{{ vector_version }}-x86_64-unknown-linux-gnu.tar.gz"
         dest: "/tmp/vector-{{ vector_version }}.tar.gz"
         timeout: 30
-      tags: install
 
-    # Распаковываем архив
-    - name: Extract Vector archive
+    # 2. Выполняем распаковку
+    - name: Extract Vector to installation directory
+      become: true
       ansible.builtin.unarchive:
         src: "/tmp/vector-{{ vector_version }}.tar.gz"
         dest: "{{ vector_install_dir }}"
         remote_src: true
         creates: "{{ vector_install_dir }}/vector-{{ vector_version }}/bin/vector"
-      tags: install
 
-    # Устанавливаем бинарник
+    # 3. Устанавливаем Vector
     - name: Install Vector binary
+      become: true
       ansible.builtin.file:
         src: "{{ vector_install_dir }}/vector-{{ vector_version }}/bin/vector"
         dest: "{{ vector_bin_path }}"
         state: link
         force: true
         mode: '0755'
-      tags: install
 
-    # Деплоим конфиг через шаблон
+    # Деплоим конфигурацию через шаблон
     - name: Deploy Vector configuration
+      become: true
       ansible.builtin.template:
         src: vector.yml.j2
-        dest: /etc/vector/vector.yml
+        dest: "{{ vector_config_dir }}/vector.yml"
         mode: '0644'
       notify: restart vector
-      tags: config
-
-    # Деплоим systemd сервис
-    - name: Deploy Vector systemd service
-      ansible.builtin.template:
-        src: vector.service.j2
-        dest: /etc/systemd/system/vector.service
-        mode: '0644'
-      notify:
-        - daemon-reload
-        - restart vector
-      tags: config
-
-    # Запускаем сервис
-    - name: Start Vector service
-      ansible.builtin.systemd:
-        name: vector
-        state: started
-        enabled: true
-        daemon_reload: true
-      tags: service
-
-  handlers:
-    - name: daemon-reload
-      ansible.builtin.systemd:
-        daemon_reload: true
-
-    - name: restart vector
-      ansible.builtin.systemd:
-        name: vector
-        state: restarted
