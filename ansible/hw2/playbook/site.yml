@@ -14,22 +14,22 @@
         - name: Clickhouse | Get clickhouse distrib
           ansible.builtin.get_url:
             url: "https://packages.clickhouse.com/rpm/stable/{{ item }}-{{ clickhouse_version }}.x86_64.rpm"
-            dest: "./{{ item }}-{{ clickhouse_version }}.x86_64.rpm"
+            dest: "/tmp/{{ item }}-{{ clickhouse_version }}.x86_64.rpm"
             mode: "0644"
           with_items: "{{ clickhouse_packages }}"
       rescue:
         - name: Clickhouse | Get clickhouse distrib
           ansible.builtin.get_url:
             url: "https://packages.clickhouse.com/rpm/stable/clickhouse-common-static-{{ clickhouse_version }}.x86_64.rpm"
-            dest: "./clickhouse-common-static-{{ clickhouse_version }}.rpm"
+            dest: "/tmp/clickhouse-common-static-{{ clickhouse_version }}.rpm"
             mode: "0644"
     - name: Install clickhouse packages
       become: true
       ansible.builtin.yum:
         name:
-          - "/home/centos/clickhouse-common-static-{{ clickhouse_version }}.x86_64.rpm"
-          - "/home/centos/clickhouse-client-{{ clickhouse_version }}.x86_64.rpm"
-          - "/home/centos/clickhouse-server-{{ clickhouse_version }}.x86_64.rpm"
+          - "tmp/clickhouse-common-static-{{ clickhouse_version }}.x86_64.rpm"
+          - "tmp/clickhouse-client-{{ clickhouse_version }}.x86_64.rpm"
+          - "tmp/clickhouse-server-{{ clickhouse_version }}.x86_64.rpm"
       notify: Start clickhouse service
     - name: Flush handlers
       ansible.builtin.meta: flush_handlers
