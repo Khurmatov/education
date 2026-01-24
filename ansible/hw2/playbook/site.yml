@@ -20,7 +20,7 @@
       rescue:
         - name: Clickhouse | Get clickhouse distrib
           ansible.builtin.get_url:
-            url: "https://packages.clickhouse.com/rpm/stable/clickhouse-common-static-{{ clickhouse_version }}.x86_64.rpm"
+            url: "https://packages.clickhouse.com/rpm/stable/clickhouse-client-{{ clickhouse_version }}.x86_64.rpm"
             dest: "./clickhouse-common-static-{{ clickhouse_version }}.rpm"
             mode: "0644"
     - name: Install clickhouse packages
