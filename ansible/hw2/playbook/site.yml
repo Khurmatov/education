@@ -50,6 +50,17 @@
         name: vector
         state: restarted
   tasks:
+    # Создание директорий
+    - name: Create Vector directories
+      become: true
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - "{{ vector_install_dir }}"
+        - "{{ vector_config_dir }}"
+      tags: vector
     - name: Download Vector archive
       become: true
       ansible.builtin.get_url:
