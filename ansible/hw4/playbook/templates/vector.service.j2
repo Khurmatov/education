@@ -1,0 +1,12 @@
+[Unit]
+Description=Vector
+Documentation=https://vector.dev
+After=network.target
+
+[Service]
+ExecStart={{ vector_bin_path }} --config {{ vector_config_dir }}/vector.yml
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
