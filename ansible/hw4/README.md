@@ -221,8 +221,35 @@ sinks:
 https://github.com/Khurmatov/education/blob/devops-course/ansible/hw4/playbook/roles/vector-role/README.md
 
 7. Повторите шаги 3–6 для LightHouse. Помните, что одна роль должна настраивать один продукт.
+https://github.com/Khurmatov/education/tree/devops-course/ansible/hw4/playbook/roles/lighthouse-role
 
 8. Выложите все roles в репозитории. Проставьте теги, используя семантическую нумерацию. Добавьте roles в `requirements.yml` в playbook.
+git@github.com:Khurmatov/lighthouse-role.git
+git@github.com:Khurmatov/vector-role.git
+
 9. Переработайте playbook на использование roles. Не забудьте про зависимости LightHouse и возможности совмещения `roles` с `tasks`.
+```
+---
+- name: Install Clickhouse
+  hosts: clickhouse
+  roles:
+    - clickhouse
+
+- name: Install Vector
+  hosts: vector
+  roles:
+    - vector-role
+
+- name: Install LightHouse
+  hosts: lighthouse
+  roles:
+    - lighthouse-role
+```
+
 10. Выложите playbook в репозиторий.
+https://github.com/Khurmatov/education/tree/devops-course/ansible/hw4/playbook
+
 11. В ответе дайте ссылки на оба репозитория с roles и одну ссылку на репозиторий с playbook.
+- playbook: https://github.com/Khurmatov/education/tree/devops-course/ansible/hw4/playbook
+- lighthouse-role: https://github.com/Khurmatov/education/tree/devops-course/ansible/hw4/playbook/roles/lighthouse-role
+- vector-role: https://github.com/Khurmatov/education/blob/devops-course/ansible/hw4/playbook/roles/vector-role
