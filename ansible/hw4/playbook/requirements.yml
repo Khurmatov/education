@@ -4,3 +4,11 @@ roles:
     scm: git
     version: "1.13"
     name: clickhouse
+  - src: git@github.com:Khurmatov/lighthouse-role.git
+    scm: git
+    version: "1.0.0"
+    name: lighthouse
+  - src: git@github.com:Khurmatov/vector-role.git
+    scm: git
+    version: "1.0.0"
+    name: vector
