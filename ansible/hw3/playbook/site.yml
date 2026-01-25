@@ -107,7 +107,7 @@
         dest: /etc/systemd/system/vector.service
         mode: '0644'
       notify:
-        - daemon-reload
+        - Daemon-reload
         - Restart vector
       tags: vector
 
