@@ -1,2 +1,71 @@
 ---
-# tasks file for lighthouse-role
+- name: Install EPEL repository
+  become: true
+  ansible.builtin.yum:
+    name: epel-release
+    state: present
+  when: ansible_os_family == "RedHat"
+
+# Установка Nginx
+- name: Install Nginx
+  become: true
+  ansible.builtin.yum:
+    name: nginx
+    state: present
+  when: ansible_os_family == "RedHat"
+
+# Создание директории для LightHouse
+- name: Create LightHouse directory
+  become: true
+  ansible.builtin.file:
+    path: "{{ lighthouse_install_dir }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_user }}"
+
+# Скачивание статики LightHouse
+- name: Download LightHouse static files
+  become: true
+  ansible.builtin.get_url:
+    url: "{{ lighthouse_download_url }}"
+    dest: "/tmp/lighthouse-{{ lighthouse_version }}.tar.gz"
+    timeout: 60
+    mode: '0644'
+
+# Распаковка LightHouse
+- name: Extract LightHouse
+  become: true
+  ansible.builtin.unarchive:
+    src: "/tmp/lighthouse-{{ lighthouse_version }}.tar.gz"
+    dest: "/tmp"
+    remote_src: true
+    creates: "/tmp/lighthouse-{{ lighthouse_version }}"
+
+# Копирование статики в веб-директорию
+- name: Copy LightHouse demo to web directory
+  become: true
+  ansible.builtin.copy:
+    src: "/tmp/lighthouse-{{ lighthouse_version }}/docs/"
+    dest: "{{ lighthouse_install_dir }}"
+    remote_src: true
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_user }}"
+    mode: '0755'
+
+# Настройка конфига Nginx
+- name: Deploy Nginx configuration for LightHouse
+  become: true
+  ansible.builtin.template:
+    src: lighthouse-nginx.conf.j2
+    dest: "{{ nginx_conf_dir }}/lighthouse.conf"
+    mode: '0644'
+  notify: Restart nginx
+
+# Запуск Nginx
+- name: Start and enable Nginx
+  become: true
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true
