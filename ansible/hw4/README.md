@@ -50,9 +50,9 @@
 Ваша цель — разбить ваш playbook на отдельные roles. - Выполнено
 Задача — сделать roles для ClickHouse, Vector и LightHouse и написать playbook для использования этих ролей. - Выполнено
 Ожидаемый результат — существуют три ваших репозитория: два с roles и один с playbook. - Выполнено
-- git@github.com:Khurmatov/lighthouse-role.git
-- git@github.com:Khurmatov/vector-role.git
-- git@github.com:Khurmatov/education.git
+- https://github.com/Khurmatov/lighthouse-role
+- https://github.com/Khurmatov/vector-role
+- https://github.com/Khurmatov/education/tree/devops-course/ansible/hw4/playbook
 
 **Что нужно сделать**
 
@@ -221,11 +221,11 @@ sinks:
 https://github.com/Khurmatov/vector-role/blob/main/README.md
 
 7. Повторите шаги 3–6 для LightHouse. Помните, что одна роль должна настраивать один продукт.
-https://github.com/Khurmatov/lighthouse-role/blob/main/README.md
+https://github.com/Khurmatov/lighthouse-role
 
 8. Выложите все roles в репозитории. Проставьте теги, используя семантическую нумерацию. Добавьте roles в `requirements.yml` в playbook.
-git@github.com:Khurmatov/lighthouse-role.git
-git@github.com:Khurmatov/vector-role.git
+https://github.com/Khurmatov/lighthouse-role
+https://github.com/Khurmatov/vector-role
 
 9. Переработайте playbook на использование roles. Не забудьте про зависимости LightHouse и возможности совмещения `roles` с `tasks`.
 ```
