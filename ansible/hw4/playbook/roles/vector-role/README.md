@@ -16,7 +16,6 @@ Role Variables
 | vars               | description       |
 |--------------------|-------------------|
 | vector_version     | Install version   |
-| --------------     | ---------------   |
 | vector_install_dir | Directory install |
 
 Example Playbook

@@ -1,22 +1,41 @@
-# Домашнее задание к занятию 3 «Использование Ansible»
+# Домашнее задание к занятию 4 «Работа с roles»
 
 ## Подготовка к выполнению
 
-1. Подготовьте в Yandex Cloud три хоста: для `clickhouse`, для `vector` и для `lighthouse`.
-2. Репозиторий LightHouse находится [по ссылке](https://github.com/VKCOM/lighthouse).
+1. * Необязательно. Познакомьтесь с [LightHouse](https://youtu.be/ymlrNlaHzIY?t=929).
+2. Создайте два пустых публичных репозитория в любом своём проекте: vector-role и lighthouse-role.
+3. Добавьте публичную часть своего ключа к своему профилю на GitHub.
 
 ## Основная часть
 
-1. Допишите playbook: нужно сделать ещё один play, который устанавливает и настраивает LightHouse.
-2. При создании tasks рекомендую использовать модули: `get_url`, `template`, `yum`, `apt`.
-3. Tasks должны: скачать статику LightHouse, установить Nginx или любой другой веб-сервер, настроить его конфиг для открытия LightHouse, запустить веб-сервер.
-4. Подготовьте свой inventory-файл `prod.yml`.
-5. Запустите `ansible-lint site.yml` и исправьте ошибки, если они есть.
-6. Попробуйте запустить playbook на этом окружении с флагом `--check`.
-7. Запустите playbook на `prod.yml` окружении с флагом `--diff`. Убедитесь, что изменения на системе произведены.
-8. Повторно запустите playbook с флагом `--diff` и убедитесь, что playbook идемпотентен.
-9. Подготовьте README.md-файл по своему playbook. В нём должно быть описано: что делает playbook, какие у него есть параметры и теги.
-10. Готовый playbook выложите в свой репозиторий, поставьте тег `08-ansible-03-yandex` на фиксирующий коммит, в ответ предоставьте ссылку на него.
+Ваша цель — разбить ваш playbook на отдельные roles.
+
+Задача — сделать roles для ClickHouse, Vector и LightHouse и написать playbook для использования этих ролей.
+
+Ожидаемый результат — существуют три ваших репозитория: два с roles и один с playbook.
+
+**Что нужно сделать**
+
+1. Создайте в старой версии playbook файл `requirements.yml` и заполните его содержимым:
+
+   ```yaml
+   ---
+     - src: git@github.com:AlexeySetevoi/ansible-clickhouse.git
+       scm: git
+       version: "1.13"
+       name: clickhouse 
+   ```
+
+2. При помощи `ansible-galaxy` скачайте себе эту роль.
+3. Создайте новый каталог с ролью при помощи `ansible-galaxy role init vector-role`.
+4. На основе tasks из старого playbook заполните новую role. Разнесите переменные между `vars` и `default`.
+5. Перенести нужные шаблоны конфигов в `templates`.
+6. Опишите в `README.md` обе роли и их параметры. Пример качественной документации ansible role [по ссылке](https://github.com/cloudalchemy/ansible-prometheus).
+7. Повторите шаги 3–6 для LightHouse. Помните, что одна роль должна настраивать один продукт.
+8. Выложите все roles в репозитории. Проставьте теги, используя семантическую нумерацию. Добавьте roles в `requirements.yml` в playbook.
+9. Переработайте playbook на использование roles. Не забудьте про зависимости LightHouse и возможности совмещения `roles` с `tasks`.
+10. Выложите playbook в репозиторий.
+11. В ответе дайте ссылки на оба репозитория с roles и одну ссылку на репозиторий с playbook.
 
 ---
 
@@ -28,187 +47,182 @@
 
 ## Ответы к основной части
 
-1. Допишите playbook: нужно сделать ещё один play, который устанавливает и настраивает LightHouse.
-2. При создании tasks рекомендую использовать модули: `get_url`, `template`, `yum`, `apt`.
-3. Tasks должны: скачать статику LightHouse, установить Nginx или любой другой веб-сервер, настроить его конфиг для открытия LightHouse, запустить веб-сервер.
-```
-- name: Install LightHouse
-  hosts: lighthouse
-  handlers:
-    - name: Restart nginx
-      become: true
-      ansible.builtin.service:
-        name: nginx
-        state: restarted
+Ваша цель — разбить ваш playbook на отдельные roles. - Выполнено
+Задача — сделать roles для ClickHouse, Vector и LightHouse и написать playbook для использования этих ролей. - Выполнено
+Ожидаемый результат — существуют три ваших репозитория: два с roles и один с playbook. - Выполнено
+- git@github.com:Khurmatov/lighthouse-role.git
+- git@github.com:Khurmatov/vector-role.git
+- git@github.com:Khurmatov/education.git
 
-  tasks:
-    - name: Install EPEL repository (CentOS/RHEL)
-      become: true
-      ansible.builtin.yum:
-        name: epel-release
-        state: present
-      when: ansible_os_family == "RedHat"
+**Что нужно сделать**
 
-    # Установка Nginx
-    - name: Install Nginx
-      become: true
-      ansible.builtin.yum:
-        name: nginx
-        state: present
-      when: ansible_os_family == "RedHat"
-
-    # Создание директории для LightHouse
-    - name: Create LightHouse directory
-      become: true
-      ansible.builtin.file:
-        path: "{{ lighthouse_install_dir }}"
-        state: directory
-        mode: '0755'
-        owner: "{{ nginx_user }}"
-        group: "{{ nginx_user }}"
-
-    # Скачивание статики LightHouse
-    - name: Download LightHouse static files
-      become: true
-      ansible.builtin.get_url:
-        url: "{{ lighthouse_download_url }}"
-        dest: "/tmp/lighthouse-{{ lighthouse_version }}.tar.gz"
-        timeout: 60
-        mode: '0644'
-
-    # Распаковка LightHouse
-    - name: Extract LightHouse
-      become: true
-      ansible.builtin.unarchive:
-        src: "/tmp/lighthouse-{{ lighthouse_version }}.tar.gz"
-        dest: "/tmp"
-        remote_src: true
-        creates: "/tmp/lighthouse-{{ lighthouse_version }}"
-
-    # Копирование статики в веб-директорию
-    - name: Copy LightHouse demo to web directory
-      become: true
-      ansible.builtin.copy:
-        src: "/tmp/lighthouse-{{ lighthouse_version }}/docs/demo/"
-        dest: "{{ lighthouse_install_dir }}"
-        remote_src: true
-        owner: "{{ nginx_user }}"
-        group: "{{ nginx_user }}"
-        mode: '0755'
-
-    # Настройка конфига Nginx
-    - name: Deploy Nginx configuration for LightHouse
-      become: true
-      ansible.builtin.template:
-        src: lighthouse-nginx.conf.j2
-        dest: "{{ nginx_conf_dir }}/lighthouse.conf"
-        mode: '0644'
-      notify: Restart nginx
-
-    # Запуск Nginx
-    - name: Start and enable Nginx
-      become: true
-      ansible.builtin.service:
-        name: nginx
-        state: started
-        enabled: true
-
-```
-
-4. Подготовьте свой inventory-файл `prod.yml`.
+1. Создайте в старой версии playbook файл `requirements.yml` и заполните его содержимым:
 ```
 ---
-clickhouse:
-  hosts:
-    clickhouse-01:
-      ansible_host: 158.160.92.157
-      ansible_user: centos
-      ansible_ssh_private_key_file: "~/.ssh/id_centos_vm"
-vector:
-  hosts:
-    vector-01:
-      ansible_host: 158.160.69.145
-      ansible_user: centos
-      ansible_ssh_private_key_file: "~/.ssh/id_centos_vm"
-lighthouse:
-  hosts:
-    lighthouse-01:
-      ansible_host: 178.154.193.161
-      ansible_user: centos
-      ansible_ssh_private_key_file: "~/.ssh/id_centos_vm"
+roles:
+  - src: git@github.com:AlexeySetevoi/ansible-clickhouse.git
+    scm: git
+    version: "1.13"
+    name: clickhouse
+  - src: git@github.com:Khurmatov/lighthouse-role.git
+    scm: git
+    version: "1.0.0"
+    name: lighthouse
+  - src: git@github.com:Khurmatov/vector-role.git
+    scm: git
+    version: "1.0.0"
+    name: vector
 ```
 
-5. Запустите `ansible-lint site.yml` и исправьте ошибки, если они есть.
-![1.png](images/1.png)
-
-Исправляем ошибки и запускаем повторно
+2. При помощи `ansible-galaxy` скачайте себе эту роль.
 ![2.png](images/2.png)
 
-6. Попробуйте запустить playbook на этом окружении с флагом `--check`.
+3. Создайте новый каталог с ролью при помощи `ansible-galaxy role init vector-role`.
 ![3.png](images/3.png)
-Ошибка появляется из-за того, что playbook с флагом `--check` не создает директории, не скачивает файлы, просто делает проверку кода
 
-7. Запустите playbook на `prod.yml` окружении с флагом `--diff`. Убедитесь, что изменения на системе произведены.
-![5.png](images/5.png)
+4. На основе tasks из старого playbook заполните новую role. Разнесите переменные между `vars` и `default`.
+`roles/vector-role/tasks/main.yml`:
+```
+---
+# Создание директорий
+- name: Create Vector directories
+  become: true
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - "{{ vector_install_dir }}"
+    - "{{ vector_config_dir }}"
+  tags: vector
 
-8. Повторно запустите playbook с флагом `--diff` и убедитесь, что playbook идемпотентен.
-![6.png](images/6.png)
-Как видим изменений нет, значит playbook идемпотентен
+# Скачивание архива
+- name: Download Vector archive
+  become: true
+  ansible.builtin.get_url:
+    url: "https://packages.timber.io/vector/{{ vector_version }}/vector-{{ vector_version }}-x86_64-unknown-linux-gnu.tar.gz"
+    dest: "/tmp/vector-{{ vector_version }}.tar.gz"
+    timeout: 30
+    mode: '0644'
+  tags: vector
 
-9. Подготовьте README.md-файл по своему playbook. В нём должно быть описано: что делает playbook, какие у него есть параметры и теги.
-# Ansible Playbook для установки и настройки LightHouse
+# Распаковка
+- name: Extract Vector to installation directory
+  become: true
+  ansible.builtin.unarchive:
+    src: "/tmp/vector-{{ vector_version }}.tar.gz"
+    dest: "{{ vector_install_dir }}"
+    remote_src: true
+    creates: "{{ vector_install_dir }}/vector-{{ vector_version }}/bin/vector"
+  tags: vector
 
-## Описание
+# Установка бинарника
+- name: Install Vector binary
+  become: true
+  ansible.builtin.file:
+    src: "{{ vector_install_dir }}/vector-{{ vector_version }}/bin/vector"
+    dest: "{{ vector_bin_path }}"
+    state: link
+    force: true
+    mode: '0755'
+  tags: vector
 
-Данный playbook устанавливает и настраивает **LightHouse** - статический веб-интерфейс для анализа производительности, развернутый на веб-сервере Nginx.
+# Создание systemd сервиса
+- name: Create Vector systemd service
+  become: true
+  ansible.builtin.template:
+    src: vector.service.j2
+    dest: /etc/systemd/system/vector.service
+    mode: '0644'
+  notify:
+    - Daemon-reload
+    - Restart vector
+  tags: vector
 
-LightHouse предоставляет демо-страницы для тестирования и анализа веб-приложений, доступные через браузер.
+# Деплой конфигурации
+- name: Deploy Vector configuration
+  become: true
+  ansible.builtin.template:
+    src: vector.yml.j2
+    dest: "{{ vector_config_dir }}/vector.yml"
+    mode: '0644'
+  notify: Restart vector
+  tags: vector
 
-## Что делает playbook
+# Включение и запуск сервиса
+- name: Enable and start Vector service
+  become: true
+  ansible.builtin.systemd:
+    name: vector
+    state: started
+    enabled: true
+    daemon_reload: true
+  tags: vector
 
-### Основные задачи:
-1. **Устанавливает веб-сервер Nginx**:
-    - Для CentOS/RHEL: добавляет EPEL репозиторий и устанавливает Nginx
-    - Для Ubuntu/Debian: устанавливает Nginx через стандартные репозитории
-    - Автоматически определяет ОС и выбирает правильный менеджер пакетов
-
-2. **Скачивает статику LightHouse**:
-    - Загружает архив LightHouse с GitHub Releases
-    - Распаковывает архив во временную директорию
-    - Копирует демо-страницы LightHouse в веб-директорию
-
-3. **Настраивает Nginx**:
-    - Создает конфигурационный файл через Jinja2 шаблон
-    - Настраивает виртуальный хост для обслуживания LightHouse
-    - Конфигурирует обработку статических файлов
-
-4. **Запускает и настраивает сервис**:
-    - Запускает Nginx сервис
-    - Включает автозагрузку при старте системы
-    - Реализует автоматический перезапуск при изменении конфигурации
-
-## Параметры (Variables)
-
-Все параметры LightHouse определены в `group_vars/lighthouse/vars.yml`:
-
-```yaml
-# Версия LightHouse
-lighthouse_version: "9.3.0"
-
-# Директория установки
-lighthouse_install_dir: "/var/www/lighthouse"
-
-# Конфигурация Nginx
-nginx_user: "www-data"
-nginx_conf_dir: "/etc/nginx/conf.d"
-
-# URL для скачивания LightHouse
-lighthouse_download_url: "https://github.com/GoogleChrome/lighthouse/archive/refs/tags/v{{ lighthouse_version }}.tar.gz"
-
-# Настройки сервера Nginx
-nginx_server_name: "{{ ansible_host | default(inventory_hostname) }}"
-nginx_listen_port: 80
 ```
 
-10. Готовый playbook выложите в свой репозиторий, поставьте тег `08-ansible-03-yandex` на фиксирующий коммит, в ответ предоставьте ссылку на него.  
-https://github.com/Khurmatov/education/commit/ef4a5b28648a5fa0b3c953e4e191c05003cb2827
+`roles/vector-role/vars/main.yml`:
+```
+# Путь к бинарнику
+vector_bin_path: "/usr/local/bin/vector"
+
+# Директория для конфигурации
+vector_config_dir: "/etc/vector"
+
+```
+
+`roles/vector-role/default/main.yml`:
+```
+# Версия Vector
+vector_version: "0.34.0"
+
+# Директория для установки
+vector_install_dir: "/opt/vector"
+```
+
+5. Перенести нужные шаблоны конфигов в `templates`.
+`roles/vector-role/templates/vector.service.j2`:
+```
+[Unit]
+Description=Vector
+Documentation=https://vector.dev
+After=network.target
+
+[Service]
+ExecStart={{ vector_bin_path }} --config {{ vector_config_dir }}/vector.yml
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
+
+`roles/vector-role/templates/vector.yml.j2`:
+```
+# Стандартный конфиг Vector
+data_dir: "/var/lib/vector"
+
+sources:
+  demo_logs:
+    type: demo_logs
+    format: json
+    interval: 1
+
+sinks:
+  stdout:
+    type: console
+    inputs:
+      - demo_logs
+    encoding:
+      codec: json
+```
+
+6. Опишите в `README.md` обе роли и их параметры. Пример качественной документации ansible role [по ссылке](https://github.com/cloudalchemy/ansible-prometheus).
+https://github.com/Khurmatov/education/blob/devops-course/ansible/hw4/playbook/roles/vector-role/README.md
+
+7. Повторите шаги 3–6 для LightHouse. Помните, что одна роль должна настраивать один продукт.
+
+8. Выложите все roles в репозитории. Проставьте теги, используя семантическую нумерацию. Добавьте roles в `requirements.yml` в playbook.
+9. Переработайте playbook на использование roles. Не забудьте про зависимости LightHouse и возможности совмещения `roles` с `tasks`.
+10. Выложите playbook в репозиторий.
+11. В ответе дайте ссылки на оба репозитория с roles и одну ссылку на репозиторий с playbook.
