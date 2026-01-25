@@ -47,7 +47,7 @@
     - name: Daemon-reload
       become: true
       ansible.builtin.systemd:
-        Daemon_reload: true
+        daemon_reload: true
 
     - name: Restart vector
       become: true
