@@ -3,7 +3,7 @@ lighthouse_version: "9.3.0"
 lighthouse_install_dir: "/var/www/lighthouse"
 
 # Nginx Configuration
-nginx_user: "www-data"
+nginx_user: "nginx"
 nginx_conf_dir: "/etc/nginx/conf.d"
 
 # LightHouse source URLs
