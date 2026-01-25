@@ -141,6 +141,13 @@
         state: restarted
 
   tasks:
+    - name: Install EPEL repository (CentOS/RHEL)
+      become: true
+      ansible.builtin.yum:
+        name: epel-release
+        state: present
+      when: ansible_os_family == "RedHat"
+
     # Установка Nginx
     - name: Install Nginx
       become: true
