@@ -211,3 +211,4 @@ nginx_listen_port: 80
 ```
 
 10. Готовый playbook выложите в свой репозиторий, поставьте тег `08-ansible-03-yandex` на фиксирующий коммит, в ответ предоставьте ссылку на него.
+https://github.com/Khurmatov/education/commit/ef4a5b28648a5fa0b3c953e4e191c05003cb2827
