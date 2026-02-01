@@ -1,0 +1,22 @@
+---
+driver:
+  name: default
+
+platforms:
+  - name: clickhouse-01
+    groups: [clickhouse, all]
+    
+  - name: vector-01  
+    groups: [vector, all]
+    
+  - name: lighthouse-01
+    groups: [lighthouse, all]
+
+provisioner:
+  name: ansible
+  inventory:
+    links:
+      hosts: /home/khurmatovri/education/ansible/hw5/playbook/inventory/prod.yml
+
+verifier:
+  name: ansible

@@ -1,0 +1,5 @@
+---
+- name: Test Vector role
+  hosts: vector
+  roles:
+    - role: /home/khurmatovri/education/ansible/hw5/playbook/roles/vector-role
