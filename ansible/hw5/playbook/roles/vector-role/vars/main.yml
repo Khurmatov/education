@@ -1,0 +1,7 @@
+---
+
+# Путь к бинарнику
+vector_bin_path: "/usr/local/bin/vector"
+
+# Директория для конфигурации
+vector_config_dir: "/etc/vector"

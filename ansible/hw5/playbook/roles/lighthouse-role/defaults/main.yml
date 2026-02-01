@@ -1,0 +1,4 @@
+---
+# LightHouse Configuration
+lighthouse_version: "9.3.0"
+lighthouse_install_dir: "/var/www/lighthouse"

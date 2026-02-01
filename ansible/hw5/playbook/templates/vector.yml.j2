@@ -1,0 +1,16 @@
+# Стандартный конфиг Vector
+data_dir: "/var/lib/vector"
+
+sources:
+  demo_logs:
+    type: demo_logs
+    format: json
+    interval: 1
+
+sinks:
+  stdout:
+    type: console
+    inputs:
+      - demo_logs
+    encoding:
+      codec: json

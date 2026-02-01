@@ -1,0 +1,12 @@
+---
+# Nginx Configuration
+nginx_user: "nginx"
+nginx_conf_dir: "/etc/nginx/conf.d"
+
+# LightHouse source URLs
+lighthouse_github_url: "https://github.com/GoogleChrome/lighthouse"
+lighthouse_download_url: "{{ lighthouse_github_url }}/archive/refs/tags/v{{ lighthouse_version }}.tar.gz"
+
+# Nginx server configuration
+nginx_server_name: "{{ ansible_host | default(inventory_hostname) }}"
+nginx_listen_port: 80
