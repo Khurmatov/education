@@ -1,0 +1,32 @@
+---
+dependency:
+  name: galaxy
+  options:
+    ignore-certs: true
+    ignore-errors: true
+
+driver:
+  name: podman
+
+platforms:
+  - name: instance
+    image: docker.io/library/centos:7
+    pre_build_image: true
+    # Используем простую команду чтобы контейнер не падал
+    command: sleep infinity
+
+provisioner:
+  name: ansible
+  config_options:
+    defaults:
+      remote_tmp: /tmp/.ansible/tmp
+      interpreter_python: auto_legacy_silent
+
+verifier:
+  name: ansible
+
+scenario:
+  test_sequence:
+    - create
+    - converge
+    - destroy

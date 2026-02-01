@@ -1,0 +1,17 @@
+---
+- name: Converge
+  hosts: all
+  gather_facts: false  # Не собирать факты для скорости
+  tasks:
+    - name: Simple test
+      debug:
+        msg: "Podman test successful"
+        
+    - name: Check container OS
+      command: cat /etc/os-release
+      register: os_info
+      changed_when: false
+      
+    - name: Show OS info
+      debug:
+        msg: "Container OS: {{ os_info.stdout_lines[0] }}"

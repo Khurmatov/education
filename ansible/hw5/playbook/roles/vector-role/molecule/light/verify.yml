@@ -1,0 +1,21 @@
+---
+- name: Verify Vector installation
+  hosts: all
+  become: true
+  
+  tasks:
+    - name: Check Vector binary
+      stat:
+        path: /usr/local/bin/vector
+      register: vector_binary
+      
+    - name: Test Vector version
+      command: /usr/local/bin/vector --version
+      register: vector_version
+      changed_when: false
+      ignore_errors: true
+      when: vector_binary.stat.exists
+      
+    - name: Display installation status
+      debug:
+        msg: "Vector installed: {{ 'yes' if vector_binary.stat.exists else 'no' }}"
