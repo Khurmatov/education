@@ -1,16 +1,36 @@
-# Домашнее задание к занятию 6 «Создание собственных модулей»
+## Ответы
 
-## Подготовка к выполнению
+**Шаг 4.** Проверьте module на исполняемость локально.
+![4.png](images/4.png)
 
-1. Создайте пустой публичный репозиторий в своём любом проекте: `my_own_collection`.
-2. Скачайте репозиторий Ansible: `git clone https://github.com/ansible/ansible.git` по любому, удобному вам пути.
-3. Зайдите в директорию Ansible: `cd ansible`.
-4. Создайте виртуальное окружение: `python3 -m venv venv`.
-5. Активируйте виртуальное окружение: `. venv/bin/activate`. Дальнейшие действия производятся только в виртуальном окружении.
-6. Установите зависимости `pip install -r requirements.txt`.
-7. Запустите настройку окружения `. hacking/env-setup`.
-8. Если все шаги прошли успешно — выйдите из виртуального окружения `deactivate`.
-9. Ваше окружение настроено. Чтобы запустить его, нужно находиться в директории `ansible` и выполнить конструкцию `. venv/bin/activate && . hacking/env-setup`.
+**Шаг 6.** Проверьте через playbook на идемпотентность.
+![6.png](images/6.png)
+
+**Шаг 15.** Установите collection из локального архива: `ansible-galaxy collection install <archivename>.tar.gz`.
+![15.png](images/15.png)
+
+**Шаг 16.** Запустите playbook, убедитесь, что он работает.
+![16.png](images/16.png)
+
+Ссылка на collection: https://github.com/Khurmatov/my_own_collection/tree/main/yandex_cloud_elk
+Ссылка на tar.gz архив: https://github.com/Khurmatov/my_own_collection/blob/main/release_package/my_own_namespace-yandex_cloud_elk-1.0.0.tar.gz
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## Основная часть
 
