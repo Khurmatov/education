@@ -54,7 +54,7 @@ author:
 EXAMPLES = r'''
 # Создание простого файла
 - name: Создать конфигурационный файл
-  my_namespace.my_collection.create_file:
+  my_own_namespace.my_collection.create_file:
     path: /etc/myapp/config.txt
     content: |
       # Конфигурационный файл для myapp
