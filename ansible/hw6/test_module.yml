@@ -1,15 +1,13 @@
 ---
-- name: single task playbook
+- name: Single task playbook
   hosts: localhost
-  connection: local
-
   tasks:
-    - name: Создать файл через модуль
+    - name: Call test_module
       my_own_module:
         path: /tmp/test.txt
         content: "Привет, мир!"
       register: result
 
-    - name: Показать результат
+    - name: Show result
       debug:
         var: result
