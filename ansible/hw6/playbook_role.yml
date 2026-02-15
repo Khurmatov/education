@@ -1,0 +1,37 @@
+---
+- name: Тестирование роли create_file
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  
+  tasks:
+    - name: Использовать роль с параметрами по умолчанию
+      include_role:
+        name: my_own_namespace.yandex_cloud_elk.create_file
+
+    - name: Использовать роль с кастомными параметрами
+      include_role:
+        name: my_own_namespace.yandex_cloud_elk.create_file
+      vars:
+        create_file_path: "/tmp/custom_file.txt"
+        create_file_content: |
+          Это кастомный файл
+          Создан: {{ ansible_date_time.iso8601 }}
+          Пользователь: {{ ansible_user_id }}
+        create_file_mode: "0644"
+        create_file_backup: true
+        debug: true
+
+    - name: Проверить созданные файлы
+      command: cat {{ item }}
+      loop:
+        - "/tmp/role_default_file.txt"
+        - "/tmp/custom_file.txt"
+      register: files
+      ignore_errors: true
+
+    - name: Показать содержимое файлов
+      debug:
+        msg: "{{ item.cmd }} -> {{ item.stdout }}"
+      loop: "{{ files.results }}"
+      when: item.stdout is defined
