@@ -1,8 +1,6 @@
 ---
 - name: Тест модуля из коллекции
   hosts: localhost
-  connection: local
-
   tasks:
     - name: Создать файл через модуль из коллекции
       my_own_namespace.yandex_cloud_elk.create_file:
