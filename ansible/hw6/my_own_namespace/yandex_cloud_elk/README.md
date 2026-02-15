@@ -1,3 +1,18 @@
-# Ansible Collection - my_own_namespace.yandex_cloud_elk
+# Коллекция Yandex Cloud ELK
 
-Documentation for the collection.
+Коллекция Ansible для управления файлами и автоматизации создания конфигураций.
+
+## Содержание
+- [Установка](#установка)
+- [Содержимое коллекции](#содержимое-коллекции)
+- [Модуль create_file](#модуль-create_file)
+- [Роль create_file](#роль-create_file)
+- [Примеры](#примеры)
+- [Разработка](#разработка)
+- [Лицензия](#лицензия)
+
+## Установка
+
+### Из репозитория
+```bash
+ansible-galaxy collection install my_own_namespace.yandex_cloud_elk
