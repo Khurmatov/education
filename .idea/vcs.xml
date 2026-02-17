@@ -3,6 +3,7 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/ansible/hw6/ansible" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/ansible/hw6/example-teamcity" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/ansible/hw6/my_own_collection" vcs="Git" />
   </component>
 </project>
