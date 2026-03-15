@@ -31,8 +31,7 @@ sinks:
     index: logs-%Y.%m.%d
     healthcheck:
       enabled: true
-    encoding:
-      codec: json
+    encoding: json  # вместо codec: json
     batch:
       max_events: 100
       timeout_secs: 1
