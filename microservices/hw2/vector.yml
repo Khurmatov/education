@@ -20,3 +20,7 @@ sinks:
     bulk:
       index: logs-%Y.%m.%d
     healthcheck: true
+    auth:
+      strategy: basic
+      user: elastic
+      password: qwerty123456
