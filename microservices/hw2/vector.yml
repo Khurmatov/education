@@ -9,7 +9,6 @@ sinks:
     type: elasticsearch
     inputs:
       - docker_logs
-    host: http://elasticsearch:9200
+    endpoint: http://elasticsearch:9200
     index: logs-%Y.%m.%d
-    doc_type: "_doc"
     healthcheck: true
