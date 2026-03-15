@@ -1,0 +1,221 @@
+volumes:
+  data:
+  prometheus-data:
+  grafana_data:
+  elasticsearch-data:
+
+networks:
+  microservices_net:
+    driver: bridge
+
+services:
+  # ============ СУЩЕСТВУЮЩИЕ СЕРВИСЫ ============
+  storage:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    restart: always
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${Storage_AccessKey:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${Storage_Secret:-minioadmin123}
+      MINIO_PROMETHEUS_AUTH_TYPE: public
+    volumes:
+      - data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - microservices_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "storage"
+
+  createbuckets:
+    image: minio/mc:latest
+    depends_on:
+      storage:
+        condition: service_healthy
+    restart: on-failure
+    entrypoint: >
+      /bin/sh -c "
+      echo 'Waiting for storage to be ready...' &&
+      sleep 10 &&
+      /usr/bin/mc alias set myminio http://storage:9000 ${Storage_AccessKey:-minioadmin} ${Storage_Secret:-minioadmin123} &&
+      /usr/bin/mc mb --ignore-existing myminio/${Storage_Bucket:-images} &&
+      /usr/bin/mc anonymous set download myminio/${Storage_Bucket:-images} &&
+      exit 0;
+      "
+    networks:
+      - microservices_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "createbuckets"
+
+  uploader:
+    build: ./uploader
+    depends_on:
+      storage:
+        condition: service_healthy
+      createbuckets:
+        condition: service_completed_successfully
+    expose:
+      - 3000
+    environment:
+      PORT: 3000
+      S3_HOST: storage
+      S3_PORT: 9000
+      S3_ACCESS_KEY: ${Storage_AccessKey:-minioadmin}
+      S3_ACCESS_SECRET: ${Storage_Secret:-minioadmin123}
+      S3_BUCKET: ${Storage_Bucket:-images}
+    networks:
+      - microservices_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "uploader"
+
+  security:
+    build: ./security
+    expose:
+      - 3000
+    environment:
+      PORT: 3000
+    networks:
+      - microservices_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "security"
+
+  gateway:
+    image: nginx:alpine
+    volumes:
+      - ./gateway/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80"
+    depends_on:
+      - security
+      - uploader
+      - storage
+    networks:
+      - microservices_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "gateway"
+
+  # ============ НОВЫЕ СЕРВИСЫ ДЛЯ ЛОГИРОВАНИЯ ============
+
+  # Elasticsearch - хранилище логов
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: elasticsearch
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=docker-cluster
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - xpack.security.authc.api_key.enabled=false
+      - xpack.monitoring.collection.enabled=true
+      - xpack.monitoring.exporters.default_local.type=local
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - microservices_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "elasticsearch"
+
+  # Vector - сборщик логов (аналог Logstash)
+  vector:
+    image: timberio/vector:0.34.0-debian
+    container_name: vector
+    volumes:
+      - ./vector/vector.toml:/etc/vector/vector.toml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    ports:
+      - "8686:8686"  # API Vector для мониторинга
+    environment:
+      - VECTOR_CONFIG=/etc/vector/vector.toml
+      - VECTOR_REQUIRE_HEALTHY=true
+      - VECTOR_LOG=info
+    networks:
+      - microservices_net
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "vector"
+
+  # Kibana - визуализация логов
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - SERVER_NAME=kibana
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=5601
+      - XPACK_SECURITY_ENABLED=false
+      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY="12345678901234567890123456789012"
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=changeme
+      - KIBANA_SYSTEM_PASSWORD=changeme
+    ports:
+      - "8081:5601"  # Доступ к Kibana на порту 8081
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - microservices_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5601/api/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "kibana"
