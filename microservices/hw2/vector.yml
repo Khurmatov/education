@@ -1,18 +1,9 @@
 data_dir: /var/lib/vector
-api:
-  enabled: true
-  address: 0.0.0.0:8686
 sources:
   docker_logs:
     type: docker_logs
     include_labels:
       - com.docker.compose.project=hw2
-    include_containers:
-      - hw2-storage-1
-      - hw2-uploader-1
-      - hw2-security-1
-      - hw2-gateway-1
-      - hw2-createbuckets-1
 transforms:
   parse_logs:
     type: remap
@@ -20,19 +11,11 @@ transforms:
       - docker_logs
     source: |
       .service = .container_name
-      .@timestamp = now()
 sinks:
   elasticsearch:
     type: elasticsearch
     inputs:
       - parse_logs
-    endpoints:
-      - http://elasticsearch:9200
+    endpoint: http://elasticsearch:9200
     index: logs-%Y.%m.%d
-    healthcheck:
-      enabled: true
-    encoding:
-      codec: json
-    batch:
-      max_events: 100
-      timeout_secs: 1
+    healthcheck: true
