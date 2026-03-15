@@ -219,6 +219,7 @@ docker compose файл, запустив который можно перейт
 
 Отрывок файла `docker-compose.yaml`
 ```declarative
+
   # ============ НОВЫЕ СЕРВИСЫ ДЛЯ ЛОГИРОВАНИЯ ============
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.17.15
@@ -227,7 +228,8 @@ docker compose файл, запустив который можно перейт
       - discovery.type=single-node
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - xpack.security.enabled=false
+      - xpack.security.enabled=true
+      - ELASTIC_PASSWORD=qwerty123456
     ulimits:
       memlock:
         soft: -1
@@ -239,7 +241,7 @@ docker compose файл, запустив который можно перейт
     networks:
       - microservices_net
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s"]
+      test: [ "CMD", "curl", "-u", "elastic:qwerty123456", "-f", "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -268,10 +270,12 @@ docker compose файл, запустив который можно перейт
     container_name: kibana
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=qwerty123456
       - SERVER_NAME=kibana
       - SERVER_HOST=0.0.0.0
       - SERVER_PORT=5601
-      - XPACK_SECURITY_ENABLED=false
+      - XPACK_SECURITY_ENABLED=true
     ports:
       - "8081:5601"
     depends_on:
@@ -285,3 +289,12 @@ docker compose файл, запустив который можно перейт
 
 docker compose файл, запустив который можно перейти по адресу http://localhost:8081, по которому доступна Kibana.
 Логин в Kibana должен быть admin, пароль qwerty123456.
+
+Вывод запущенных контейнеров:
+![3.png](images/3.png)
+
+Вход в кибану с вводом пользователя:
+![2.png](images/2.png)
+
+Проверка, что есть данные по индексу `logs-*`
+![1.png](images/1.png)
