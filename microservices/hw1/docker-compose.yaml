@@ -3,25 +3,32 @@ volumes:
   prometheus-data:
   grafana_data:
 
+networks:
+  microservices_net:
+    driver: bridge
+
 services:
   storage:
     image: minio/minio:latest
-    command: server /data
+    command: server /data --console-address ":9001"
     restart: always
-    expose: 
-      - 9000
+    ports:
+      - "9000:9000"
+      - "9001:9001"
     environment:
-      MINIO_ROOT_USER: ${Storage_AccessKey:-STORAGE_ACCESS_KEY}
-      MINIO_ROOT_PASSWORD: ${Storage_Secret:-STORAGE_SECRET_KEY}
+      MINIO_ROOT_USER: ${Storage_AccessKey:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${Storage_Secret:-minioadmin123}
       MINIO_PROMETHEUS_AUTH_TYPE: public
     volumes:
       - data:/data
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 15s
+    networks:
+      - microservices_net
 
   createbuckets:
     image: minio/mc:latest
@@ -31,10 +38,15 @@ services:
     restart: on-failure
     entrypoint: >
       /bin/sh -c "
-      sleep 5;
-      /usr/bin/mc alias set storage http://storage:9000 ${Storage_AccessKey:-minioadmin} ${Storage_Secret:-minioadmin123} &&
-      /usr/bin/mc mb --ignore-existing storage/${Storage_Bucket:-images} &&
-      /usr/bin/mc anonymous set download storage/${Storage_Bucket:-images} &&
+      echo 'Waiting for storage to be ready...' &&
+      sleep 10 &&
+      echo 'Configuring alias...' &&
+      /usr/bin/mc alias set myminio http://storage:9000 ${Storage_AccessKey:-minioadmin} ${Storage_Secret:-minioadmin123} &&
+      echo 'Creating bucket...' &&
+      /usr/bin/mc mb --ignore-existing myminio/${Storage_Bucket:-images} &&
+      echo 'Setting bucket policy...' &&
+      /usr/bin/mc anonymous set download myminio/${Storage_Bucket:-images} &&
+      echo 'Bucket setup complete!' &&
       exit 0;
       "
     networks:
@@ -43,36 +55,40 @@ services:
   uploader:
     build: ./uploader
     depends_on:
-      - storage
-      - createbuckets
-    expose: 
+      storage:
+        condition: service_healthy
+      createbuckets:
+        condition: service_completed_successfully
+    expose:
       - 3000
     environment:
       PORT: 3000
       S3_HOST: storage
       S3_PORT: 9000
-      S3_ACCESS_KEY: ${Storage_AccessKey:-STORAGE_ACCESS_KEY}
-      S3_ACCESS_SECRET: ${Storage_Secret:-STORAGE_SECRET_KEY}
-      S3_BUCKET: ${Storage_Bucket:-STORAGE_BUCKET}
-  
+      S3_ACCESS_KEY: ${Storage_AccessKey:-minioadmin}
+      S3_ACCESS_SECRET: ${Storage_Secret:-minioadmin123}
+      S3_BUCKET: ${Storage_Bucket:-images}
+    networks:
+      - microservices_net
+
   security:
     build: ./security
-    expose: 
+    expose:
       - 3000
     environment:
       PORT: 3000
+    networks:
+      - microservices_net
 
   gateway:
     image: nginx:alpine
     volumes:
       - ./gateway/nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
-      - "8080:80"
+      - "80:80"
     depends_on:
-      - storage
-      - uploader
       - security
-
-  networks:
-    microservices_net:
-      driver: bridge
+      - uploader
+      - storage
+    networks:
+      - microservices_net
