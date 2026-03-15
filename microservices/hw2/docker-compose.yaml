@@ -129,7 +129,8 @@ services:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - xpack.security.enabled=false
+      - xpack.security.enabled=true
+      - ELASTIC_PASSWORD=qwerty123456
     ulimits:
       memlock:
         soft: -1
@@ -141,7 +142,7 @@ services:
     networks:
       - microservices_net
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s"]
+      test: [ "CMD", "curl", "-u", "elastic:qwerty123456", "-f", "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -170,10 +171,12 @@ services:
     container_name: kibana
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=qwerty123456
       - SERVER_NAME=kibana
       - SERVER_HOST=0.0.0.0
       - SERVER_PORT=5601
-      - XPACK_SECURITY_ENABLED=false
+      - XPACK_SECURITY_ENABLED=true
     ports:
       - "8081:5601"
     depends_on:
