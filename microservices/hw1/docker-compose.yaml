@@ -40,13 +40,9 @@ services:
       /bin/sh -c "
       echo 'Waiting for storage to be ready...' &&
       sleep 10 &&
-      echo 'Configuring alias...' &&
       /usr/bin/mc alias set myminio http://storage:9000 ${Storage_AccessKey:-minioadmin} ${Storage_Secret:-minioadmin123} &&
-      echo 'Creating bucket...' &&
       /usr/bin/mc mb --ignore-existing myminio/${Storage_Bucket:-images} &&
-      echo 'Setting bucket policy...' &&
       /usr/bin/mc anonymous set download myminio/${Storage_Bucket:-images} &&
-      echo 'Bucket setup complete!' &&
       exit 0;
       "
     networks:

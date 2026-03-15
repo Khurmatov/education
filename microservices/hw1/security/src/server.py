@@ -11,12 +11,7 @@ metrics = PrometheusMetrics(server, defaults_prefix=NO_PREFIX, buckets=[0.1, 0.5
 metrics.info('app_info', 'Application info', version='1.0')
 
 jwt_key = 'secret'
-users_db = {
-    'bob': {
-        'password': pbkdf2_sha256.hash('qwe123'),
-        'id': str(uuid.uuid4())
-    }
-}
+users_db = {}
 
 @server.route('/status', methods=['GET'])
 def status():
