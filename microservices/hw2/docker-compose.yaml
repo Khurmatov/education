@@ -163,7 +163,7 @@ services:
 
   # Vector - сборщик логов (аналог Logstash)
   vector:
-    image: timberio/vector:0.34.0-debian
+    image: timberio/vector:0.31.0-debian  # замените 0.34.0 на 0.31.0
     container_name: vector
     ports:
       - "8686:8686"
@@ -180,12 +180,6 @@ services:
     networks:
       - microservices_net
     restart: unless-stopped
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-        tag: "vector"
 
   # Kibana - визуализация логов
   kibana:

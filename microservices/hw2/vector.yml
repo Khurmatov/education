@@ -26,7 +26,8 @@ sinks:
     type: elasticsearch
     inputs:
       - parse_logs
-    endpoint: http://elasticsearch:9200
+    endpoints:
+      - http://elasticsearch:9200
     index: logs-%Y.%m.%d
     healthcheck:
       enabled: true
