@@ -3,13 +3,13 @@ sources:
   docker_logs:
     type: docker_logs
     include_labels:
-      - com.docker.compose.project=hw2
+      - "com.docker.compose.project=hw2"
 sinks:
   elasticsearch:
     type: elasticsearch
     inputs:
       - docker_logs
-    endpoint: http://elasticsearch:9200
-    mode: bulk
+    host: http://elasticsearch:9200
     index: logs-%Y.%m.%d
+    doc_type: "_doc"
     healthcheck: true

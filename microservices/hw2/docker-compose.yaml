@@ -163,7 +163,7 @@ services:
 
   # Vector - сборщик логов (аналог Logstash)
   vector:
-    image: timberio/vector:0.31.0-debian  # замените 0.34.0 на 0.31.0
+    image: timberio/vector:0.21.0-debian
     container_name: vector
     ports:
       - "8686:8686"
