@@ -172,8 +172,6 @@ curl -X GET http://localhost/images/4e6df220-295e-4231-82bc-45e4b1484430.jpg
 1. Анонимный доступ.
 2. Запрос направляется в сервис security POST /v1/user.
 
-
-
 **POST /v1/token**
 1. Анонимный доступ.
 2. Запрос направляется в сервис security POST /v1/token.
@@ -203,3 +201,112 @@ curl -X POST -H 'Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJz
 
 **Получение файла**
 curl -X GET http://localhost/images/4e6df220-295e-4231-82bc-45e4b1484430.jpg
+
+1. Запускаем сервис на основе файла docker compose, будет представлен ниже:
+![11.png](images/11.png)
+
+2. Проверяем, что все сервисы поднялись:
+![12.png](images/12.png)
+
+3. Регистрируем пользователя, получаем его токен и сохраняем токен в переменную:
+![13.png](images/13.png)
+
+4. Создаем реальный файл jpeg
+![14.png](images/14.png)
+
+5. Загружаем файл через /upload, сохраняем имя файла из ответа, получаем файл и проверяем, что он скачался:
+![15.png](images/15.png)
+
+Файл `docker-compose.yml`
+```declarative
+volumes:
+  data:
+  prometheus-data:
+  grafana_data:
+
+networks:
+  microservices_net:
+    driver: bridge
+
+services:
+  storage:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    restart: always
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${Storage_AccessKey:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${Storage_Secret:-minioadmin123}
+      MINIO_PROMETHEUS_AUTH_TYPE: public
+    volumes:
+      - data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - microservices_net
+
+  createbuckets:
+    image: minio/mc:latest
+    depends_on:
+      storage:
+        condition: service_healthy
+    restart: on-failure
+    entrypoint: >
+      /bin/sh -c "
+      echo 'Waiting for storage to be ready...' &&
+      sleep 10 &&
+      /usr/bin/mc alias set myminio http://storage:9000 ${Storage_AccessKey:-minioadmin} ${Storage_Secret:-minioadmin123} &&
+      /usr/bin/mc mb --ignore-existing myminio/${Storage_Bucket:-images} &&
+      /usr/bin/mc anonymous set download myminio/${Storage_Bucket:-images} &&
+      exit 0;
+      "
+    networks:
+      - microservices_net
+
+  uploader:
+    build: ./uploader
+    depends_on:
+      storage:
+        condition: service_healthy
+      createbuckets:
+        condition: service_completed_successfully
+    expose:
+      - 3000
+    environment:
+      PORT: 3000
+      S3_HOST: storage
+      S3_PORT: 9000
+      S3_ACCESS_KEY: ${Storage_AccessKey:-minioadmin}
+      S3_ACCESS_SECRET: ${Storage_Secret:-minioadmin123}
+      S3_BUCKET: ${Storage_Bucket:-images}
+    networks:
+      - microservices_net
+
+  security:
+    build: ./security
+    expose:
+      - 3000
+    environment:
+      PORT: 3000
+    networks:
+      - microservices_net
+
+  gateway:
+    image: nginx:alpine
+    volumes:
+      - ./gateway/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80"
+    depends_on:
+      - security
+      - uploader
+      - storage
+    networks:
+      - microservices_net
+```
