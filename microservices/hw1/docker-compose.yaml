@@ -23,17 +23,21 @@ services:
       retries: 3
 
   createbuckets:
-    image: minio/mc
+    image: minio/mc:latest
     depends_on:
-      - storage
+      storage:
+        condition: service_healthy
     restart: on-failure
-    entrypoint: > 
-      /bin/sh -c "      
-      /usr/bin/mc config host add storage http://storage:9000 ${Storage_AccessKey-STORAGE_ACCESS_KEY} ${Storage_Secret-STORAGE_SECRET_KEY} &&
-      /usr/bin/mc mb --ignore-existing storage/${Storage_Bucket:-data} &&
-      /usr/bin/mc policy set download storage/${Storage_Bucket:-data} &&
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      /usr/bin/mc alias set storage http://storage:9000 ${Storage_AccessKey:-minioadmin} ${Storage_Secret:-minioadmin123} &&
+      /usr/bin/mc mb --ignore-existing storage/${Storage_Bucket:-images} &&
+      /usr/bin/mc anonymous set download storage/${Storage_Bucket:-images} &&
       exit 0;
       "
+    networks:
+      - microservices_net
 
   uploader:
     build: ./uploader
@@ -62,8 +66,12 @@ services:
     volumes:
       - ./gateway/nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
-      - "80:8080"      
+      - "8080:80"
     depends_on:
       - storage
       - uploader
       - security
+
+  networks:
+    microservices_net:
+      driver: bridge
