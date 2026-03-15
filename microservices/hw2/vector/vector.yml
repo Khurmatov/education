@@ -1,9 +1,7 @@
 data_dir: /var/lib/vector
-
 api:
   enabled: true
   address: 0.0.0.0:8686
-
 sources:
   docker_logs:
     type: docker_logs
@@ -15,8 +13,6 @@ sources:
       - hw2-security-1
       - hw2-gateway-1
       - hw2-createbuckets-1
-    exclude_containers: []
-
 transforms:
   parse_logs:
     type: remap
@@ -25,7 +21,6 @@ transforms:
     source: |
       .service = .container_name
       .@timestamp = now()
-
 sinks:
   elasticsearch:
     type: elasticsearch
