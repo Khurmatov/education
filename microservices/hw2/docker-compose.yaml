@@ -165,17 +165,17 @@ services:
   vector:
     image: timberio/vector:0.34.0-debian
     container_name: vector
+    ports:
+      - "8686:8686"
     volumes:
-      - ./vector/vector.toml:/etc/vector/vector.toml:ro
+      - ./vector.yml:/etc/vector/vector.yml:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
       elasticsearch:
         condition: service_healthy
-    ports:
-      - "8686:8686"  # API Vector для мониторинга
     environment:
-      - VECTOR_CONFIG=/etc/vector/vector.toml
-      - VECTOR_REQUIRE_HEALTHY=true
+      - VECTOR_CONFIG=/etc/vector/vector.yml
+      - VECTOR_REQUIRE_HEALTHY=false
       - VECTOR_LOG=info
     networks:
       - microservices_net

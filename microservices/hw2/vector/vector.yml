@@ -8,20 +8,14 @@ sources:
   docker_logs:
     type: docker_logs
     include_labels:
-      - com.docker.compose.project=hw1
+      - com.docker.compose.project=hw2
     include_containers:
-      - hw1-storage-1
-      - hw1-uploader-1
-      - hw1-security-1
-      - hw1-gateway-1
-      - hw1-createbuckets-1
+      - hw2-storage-1
+      - hw2-uploader-1
+      - hw2-security-1
+      - hw2-gateway-1
+      - hw2-createbuckets-1
     exclude_containers: []
-    include_events:
-      - start
-      - stop
-      - die
-      - destroy
-    include_timestamps: true
 
 transforms:
   parse_logs:
@@ -29,64 +23,21 @@ transforms:
     inputs:
       - docker_logs
     source: |
-      # Парсим JSON если возможно
-      if is_json(.message) {
-        .parsed = parse_json!(.message)
-      }
-      
-      # Добавляем временную метку в читаемом формате
+      .service = .container_name
       .@timestamp = now()
-      
-      # Нормализуем поля
-      .container_name = .container_name
-      .service = get!(., "container_name") ?? "unknown"
-      
-      # Удаляем ненужные поля
-      del(.image)
-      del(.image_id)
-      del(.com)
-      del(.container_id)
-
-  parse_nginx:
-    type: remap
-    inputs:
-      - parse_logs
-    source: |
-      if exists(.parsed) && contains(.message, "nginx") {
-        # Парсим access логи nginx если есть
-        if contains(.message, "GET") || contains(.message, "POST") {
-          parsed_nginx = parse_regex!(.message, r'^(?P<remote_addr>[^ ]+) - (?P<remote_user>[^ ]+) \[(?P<time_local>[^\]]+)\] "(?P<request_method>[A-Z]+) (?P<request_uri>[^ ]+) HTTP/\d\.\d" (?P<status>\d+) (?P<body_bytes_sent>\d+) "(?P<http_referer>[^"]*)" "(?P<http_user_agent>[^"]*)"')
-          .nginx = parsed_nginx
-        }
-      }
-
-  filter_logs:
-    type: filter
-    inputs:
-      - parse_nginx
-    condition: |
-      .level == "info" || .level == "error" || .level == "warn" || .level == "debug" || !exists(.level)
 
 sinks:
   elasticsearch:
     type: elasticsearch
     inputs:
-      - filter_logs
+      - parse_logs
     endpoints:
       - http://elasticsearch:9200
-    mode: bulk
     index: logs-%Y.%m.%d
-    healthcheck: true
-    pipeline: ""
-    bulk:
-      action: index
-      index: logs-%Y.%m.%d
+    healthcheck:
+      enabled: true
     encoding:
       codec: json
     batch:
-      max_events: 1000
-      max_bytes: 10485760
-      timeout_secs: 5
-    buffer:
-      type: disk
-      max_size: 268435488
+      max_events: 100
+      timeout_secs: 1
