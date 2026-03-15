@@ -121,23 +121,16 @@ services:
         max-file: "3"
         tag: "gateway"
 
-  # ============ НОВЫЕ СЕРВИСЫ ДЛЯ ЛОГИРОВАНИЯ ============
-
   # Elasticsearch - хранилище логов
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.15
     container_name: elasticsearch
     environment:
-      - node.name=elasticsearch
-      - cluster.name=docker-cluster
       - discovery.type=single-node
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - xpack.security.enabled=false
       - xpack.security.enrollment.enabled=false
-      - xpack.security.authc.api_key.enabled=false
-      - xpack.monitoring.collection.enabled=true
-      - xpack.monitoring.exporters.default_local.type=local
     ulimits:
       memlock:
         soft: -1
@@ -146,70 +139,46 @@ services:
       - elasticsearch-data:/usr/share/elasticsearch/data
     ports:
       - "9200:9200"
-      - "9300:9300"
     networks:
       - microservices_net
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s"]
+      test: [ "CMD", "curl", "-f", "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s" ]
       interval: 30s
       timeout: 10s
       retries: 5
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-        tag: "elasticsearch"
 
-  # Vector - сборщик логов (аналог Logstash)
-  vector:
-    image: timberio/vector:0.35.0-debian
-    container_name: vector
-    ports:
-      - "8686:8686"
-    volumes:
-      - ./vector.yml:/etc/vector/vector.yml:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
-    environment:
-      - VECTOR_CONFIG=/etc/vector/vector.yml
-      - VECTOR_REQUIRE_HEALTHY=false
-      - VECTOR_LOG=info
-    networks:
-      - microservices_net
-    restart: unless-stopped
+    vector:
+      image: timberio/vector:0.35.0-debian
+      container_name: vector
+      ports:
+        - "8686:8686"
+      volumes:
+        - ./vector.yml:/etc/vector/vector.yml:ro
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+      depends_on:
+        elasticsearch:
+          condition: service_healthy
+      environment:
+        - VECTOR_CONFIG=/etc/vector/vector.yml
+        - VECTOR_REQUIRE_HEALTHY=false
+        - VECTOR_LOG=info
+      networks:
+        - microservices_net
+      restart: unless-stopped
 
-  # Kibana - визуализация логов
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.11.0
-    container_name: kibana
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - SERVER_NAME=kibana
-      - SERVER_HOST=0.0.0.0
-      - SERVER_PORT=5601
-      - XPACK_SECURITY_ENABLED=false
-      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY="12345678901234567890123456789012"
-      - ELASTICSEARCH_USERNAME=elastic
-      - ELASTICSEARCH_PASSWORD=changeme
-      - KIBANA_SYSTEM_PASSWORD=changeme
-    ports:
-      - "8081:5601"  # Доступ к Kibana на порту 8081
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
-    networks:
-      - microservices_net
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5601/api/status"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-        tag: "kibana"
+    kibana:
+      image: docker.elastic.co/kibana/kibana:7.17.15
+      container_name: kibana
+      environment:
+        - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+        - SERVER_NAME=kibana
+        - SERVER_HOST=0.0.0.0
+        - SERVER_PORT=5601
+        - XPACK_SECURITY_ENABLED=false
+      ports:
+        - "8081:5601"
+      depends_on:
+        elasticsearch:
+          condition: service_healthy
+      networks:
+        - microservices_net
