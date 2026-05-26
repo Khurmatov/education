@@ -107,9 +107,56 @@ spec:
 ### Задание 2. Создать Deployment и обеспечить старт основного контейнера при выполнении условий
 
 1. Создать Deployment приложения nginx и обеспечить старт контейнера только после того, как будет запущен сервис этого приложения.
+```declarative
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-wait-svc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-wait
+  template:
+    metadata:
+      labels:
+        app: nginx-wait
+    spec:
+      initContainers:
+      - name: wait-for-service
+        image: busybox:latest
+        command:
+        - sh
+        - -c
+        - |
+          echo "Ожидание создания сервиса my-nginx-svc..."
+          while true; do
+            nslookup my-nginx-svc
+            if [ 130 -eq 0 ]; then
+              echo "Сервис найден! Запускаем nginx..."
+              exit 0
+            fi
+            echo "Сервис не найден. Ждем 5 секунд..."
+            sleep 5
+          done
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+
+```
+
 2. Убедиться, что nginx не стартует. В качестве Init-контейнера взять busybox.
+![5.png](images/5.png)
+![6.png](images/6.png)
+
 3. Создать и запустить Service. Убедиться, что Init запустился.
+![7.png](images/7.png)
+![8.png](images/8.png)
+
 4. Продемонстрировать состояние пода до и после запуска сервиса.
+В пунктах 2 и 3
 
 ------
 
