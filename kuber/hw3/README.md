@@ -25,10 +25,82 @@
 ### Задание 1. Создать Deployment и обеспечить доступ к репликам приложения из другого Pod
 
 1. Создать Deployment приложения, состоящего из двух контейнеров — nginx и multitool. Решить возникшую ошибку.
+```declarative
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deployment
+  labels:
+    app: web-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-app
+  template:
+    metadata:
+      labels:
+        app: web-app
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+          name: nginx-port
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+      
+      - name: multitool
+        image: wbitt/network-multitool
+        ports:
+        - containerPort: 8080
+          name: multitool-port
+        env:
+        - name: HTTP_PORT
+          value: "8080"
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+
+```
+
+![1.png](images/1.png)
+
 2. После запуска увеличить количество реплик работающего приложения до 2.
+![2.png](images/2.png)
+
 3. Продемонстрировать количество подов до и после масштабирования.
+В пунктах 1 и 2
+
 4. Создать Service, который обеспечит доступ до реплик приложений из п.1.
+```declarative
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-clusterip
+spec:
+  type: ClusterIP
+  selector:
+    app: web-app
+  ports:
+  - name: nginx-port
+    protocol: TCP
+    port: 9001
+    targetPort: 80
+  - name: multitool-port
+    protocol: TCP
+    port: 9002
+    targetPort: 8080
+
+```
+![3.png](images/3.png)
+
 5. Создать отдельный Pod с приложением multitool и убедиться с помощью `curl`, что из пода есть доступ до приложений из п.1.
+![4.png](images/4.png)
 
 ------
 
