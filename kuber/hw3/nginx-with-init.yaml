@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-wait-svc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-wait
+  template:
+    metadata:
+      labels:
+        app: nginx-wait
+    spec:
+      initContainers:
+      - name: wait-for-service
+        image: busybox:latest
+        command:
+        - sh
+        - -c
+        - |
+          echo "Ожидание создания сервиса my-nginx-svc..."
+          while true; do
+            nslookup my-nginx-svc
+            if [ 130 -eq 0 ]; then
+              echo "Сервис найден! Запускаем nginx..."
+              exit 0
+            fi
+            echo "Сервис не найден. Ждем 5 секунд..."
+            sleep 5
+          done
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
