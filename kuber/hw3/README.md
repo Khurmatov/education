@@ -25,19 +25,110 @@
 ### Задание 1. Создать Deployment и обеспечить доступ к контейнерам приложения по разным портам из другого Pod внутри кластера
 
 1. Создать Deployment приложения, состоящего из двух контейнеров (nginx и multitool), с количеством реплик 3 шт.
-2. Создать Service, который обеспечит доступ внутри кластера до контейнеров приложения из п.1 по порту 9001 — nginx 80, по 9002 — multitool 8080.
-3. Создать отдельный Pod с приложением multitool и убедиться с помощью `curl`, что из пода есть доступ до приложения из п.1 по разным портам в разные контейнеры.
-4. Продемонстрировать доступ с помощью `curl` по доменному имени сервиса.
-5. Предоставить манифесты Deployment и Service в решении, а также скриншоты или вывод команды п.4.
+```declarative
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deployment
+  labels:
+    app: web-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web-app
+  template:
+    metadata:
+      labels:
+        app: web-app
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+          name: nginx-port
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+      
+      - name: multitool
+        image: wbitt/network-multitool
+        ports:
+        - containerPort: 8080
+          name: multitool-port
+        env:
+        - name: HTTP_PORT
+          value: "8080"
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
 
+```
+![12.png](images/12.png)
+
+2. Создать Service, который обеспечит доступ внутри кластера до контейнеров приложения из п.1 по порту 9001 — nginx 80, по 9002 — multitool 8080.
+```declarative
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-clusterip
+spec:
+  type: ClusterIP
+  selector:
+    app: web-app
+  ports:
+  - name: nginx-port
+    protocol: TCP
+    port: 9001
+    targetPort: 80
+  - name: multitool-port
+    protocol: TCP
+    port: 9002
+    targetPort: 8080
+
+```
+![13.png](images/13.png)
+
+3. Создать отдельный Pod с приложением multitool и убедиться с помощью `curl`, что из пода есть доступ до приложения из п.1 по разным портам в разные контейнеры.
+![14.png](images/14.png)
+
+4. Продемонстрировать доступ с помощью `curl` по доменному имени сервиса.
+![15.png](images/15.png)
+![16.png](images/16.png)
+
+5. Предоставить манифесты Deployment и Service в решении, а также скриншоты или вывод команды п.4.
+В пунктах 1 и 2
 ------
 
 ### Задание 2. Создать Service и обеспечить доступ к приложениям снаружи кластера
 
 1. Создать отдельный Service приложения из Задания 1 с возможностью доступа снаружи кластера к nginx, используя тип NodePort.
-2. Продемонстрировать доступ с помощью браузера или `curl` с локального компьютера.
-3. Предоставить манифест и Service в решении, а также скриншоты или вывод команды п.2.
+```declarative
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-nodeport
+spec:
+  type: NodePort
+  selector:
+    app: web-app
+  ports:
+  - name: nginx-port
+    protocol: TCP
+    port: 80
+    targetPort: 80
+    nodePort: 30080
+```
 
+2. Продемонстрировать доступ с помощью браузера или `curl` с локального компьютера.
+![17.png](images/17.png)
+![11.png](images/11.png)
+
+3. Предоставить манифест и Service в решении, а также скриншоты или вывод команды п.2.
+В пунктах 1 и 2
 ------
 
 ### Правила приёма работы
