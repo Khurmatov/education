@@ -1,0 +1,22 @@
+---
+- name: Test create_file role
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  
+  tasks:
+    - name: Use role with default parameters
+      include_role:
+        name: my_own_namespace.yandex_cloud_elk.create_file
+
+    - name: Use role with custom parameters
+      include_role:
+        name: my_own_namespace.yandex_cloud_elk.create_file
+      vars:
+        create_file_path: "/tmp/my_custom_file.txt"
+        create_file_content: |
+          Мой кастомный файл
+          Создан: {{ ansible_date_time.iso8601 }}
+        create_file_mode: "0644"
+        create_file_backup: true
+        debug: true
