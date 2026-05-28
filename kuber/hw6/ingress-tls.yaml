@@ -3,7 +3,12 @@ kind: Ingress
 metadata:
   name: web-app-ingress
   namespace: default
+  annotations:
+    # Для ingress-nginx controller
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
 spec:
+  ingressClassName: nginx  # Добавьте, если используете ingress-nginx
   tls:
     - hosts:
         - myapp.example.com
@@ -19,15 +24,3 @@ spec:
                 name: web-app-service
                 port:
                   number: 80
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: web-app-service
-spec:
-  selector:
-    app: web-app
-  ports:
-    - port: 80
-      targetPort: 80
-      protocol: TCP
