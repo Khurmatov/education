@@ -57,6 +57,7 @@
     - описание пода с контейнерами (`kubectl describe pods data-exchange`)
     - вывод команды чтения файла (`tail -f <имя общего файла>`)
 
+Ответы к заданию:
 ```declarative
 apiVersion: apps/v1
 kind: Deployment
@@ -218,6 +219,7 @@ spec:
 - Скриншоты:
     - каждый шаг выполнения задания, начиная с шага 2
 
+Ответы к заданию:
 ```declarative
 ---
 apiVersion: v1
