@@ -28,12 +28,20 @@ spec:
           image: wbitt/network-multitool:latest
           env:
             - name: HTTP_PORT
-              value: "80"
+              value: "1180"  # Изменяем порт, чтобы не конфликтовать с nginx
+            - name: HTTPS_PORT
+              value: "11443"  # Изменяем HTTPS порт
           ports:
-            - containerPort: 80
+            - containerPort: 1180
+              name: http
+            - containerPort: 11443
+              name: https
           volumeMounts:
             - name: web-content
               mountPath: /usr/share/nginx/html
+          # Добавляем команду для правильного запуска
+          command: ["/bin/sh"]
+          args: ["-c", "httpd -p ${HTTP_PORT} -h /usr/share/nginx/html"]
 
       volumes:
         - name: web-content
@@ -42,21 +50,3 @@ spec:
         - name: nginx-config
           configMap:
             name: nginx-config
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: nginx-config
-  namespace: default
-data:
-  default.conf: |
-    server {
-        listen 80;
-        server_name localhost;
-        root /usr/share/nginx/html;
-        index index.html;
-    
-        location / {
-            try_files $uri $uri/ =404;
-        }
-    }
