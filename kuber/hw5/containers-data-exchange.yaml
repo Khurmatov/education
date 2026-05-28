@@ -16,14 +16,14 @@ spec:
         - name: writer
           image: busybox
           command: ["/bin/sh", "-c"]
-          args: ["while true; do cat /shared/data.txt; sleep 5; done"]
+          args: ["while true; do echo $(date) >> /shared/data.txt; sleep 5; done"]
           volumeMounts:
             - name: shared-storage
               mountPath: /shared
         - name: reader
           image: wbitt/network-multitool
           command: ["/bin/sh", "-c"]
-          args: ["tail -f /shared/data.txt"]
+          args: ["while true; do if [ -f /shared/data.txt ]; then tail -f /shared/data.txt; fi; sleep 1; done"]
           volumeMounts:
             - name: shared-storage
               mountPath: /shared
