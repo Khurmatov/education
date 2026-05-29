@@ -1,0 +1,11 @@
+name: my-app
+
+writer:
+  image:
+    repository: busybox
+    tag: latest
+
+reader:
+  image:
+    repository: wbitt/network-multitool
+    tag: latest
